@@ -26,10 +26,12 @@
         .header { text-align: center; margin-bottom: 24px; padding-top: 20px; }
         .logo { 
             width: 80px; height: 80px; 
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6); 
+            background-image: url('https://files.catbox.moe/h05hbj.jpg');
+            background-size: cover;
+            background-position: center;
             border-radius: 22px; margin: 0 auto 16px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 36px; box-shadow: 0 10px 30px rgba(59,130,246,0.3);
+            box-shadow: 0 10px 30px rgba(59,130,246,0.3);
+            border: 2px solid var(--primary);
         }
         h1 { font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .badge { display: inline-block; background: rgba(59,130,246,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; color: var(--primary); margin-top: 6px; border: 1px solid rgba(59,130,246,0.3); }
@@ -53,7 +55,6 @@
         .product-card { background: var(--card); border-radius: 20px; padding: 16px; margin-bottom: 10px; display: flex; align-items: center; cursor: pointer; border: 1px solid var(--border); transition: all 0.2s; }
         .product-card:active { transform: scale(0.98); background: #1a1e2e; }
         .product-icon { width: 54px; height: 54px; background: rgba(59,130,246,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-right: 16px; font-size: 24px; border: 1px solid rgba(59,130,246,0.2); }
-        .product-icon img { width: 32px; height: 32px; object-fit: contain; }
         .product-info { flex: 1; }
         .product-name { font-weight: 700; margin-bottom: 6px; font-size: 16px; }
         .price-box { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -90,6 +91,15 @@
         .order-actions { display: flex; gap: 10px; margin-top: 16px; }
         .order-actions .btn { flex: 1; }
 
+        /* User Orders (for regular user) */
+        .user-order-card { background: var(--card); border-radius: 20px; padding: 18px; border: 1px solid var(--border); margin-bottom: 12px; }
+        .user-order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .user-order-product { font-weight: 700; font-size: 16px; }
+        .user-order-price { color: var(--success); font-weight: 700; }
+        .user-order-date { color: var(--text-secondary); font-size: 12px; margin: 8px 0; }
+        .user-order-file { margin-top: 12px; padding: 12px; background: rgba(59,130,246,0.1); border-radius: 14px; border: 1px solid var(--border); }
+        .user-order-file i { color: var(--primary); margin-right: 8px; }
+
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); padding: 20px; overflow-y: auto; z-index: 1000; }
         .modal-content { max-width: 500px; margin: 20px auto; background: var(--card); border-radius: 28px; padding: 28px; border: 1px solid var(--border); }
@@ -123,8 +133,6 @@
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
         .btn:active { transform: scale(0.97); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-group { display: flex; gap: 12px; margin-top: 20px; }
-        .btn-group .btn { flex: 1; }
 
         /* Toast */
         .toast { position: fixed; bottom: 30px; left: 20px; right: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 2000; animation: slideUp 0.3s; max-width: 500px; margin: 0 auto; }
@@ -132,25 +140,24 @@
         .toast.success i { color: var(--success); }
         .toast.error i { color: var(--danger); }
         .toast.info i { color: var(--primary); }
+        .toast.warning i { color: var(--warning); }
         .toast-content { flex: 1; }
         .toast-title { font-weight: 700; margin-bottom: 4px; }
         .toast-message { font-size: 13px; color: var(--text-secondary); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Icons */
-        .icon { width: 24px; height: 24px; }
-        
         /* Empty state */
         .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
         .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+        /* Notification badge */
+        .notification-badge { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: 700; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div class="logo">
-        <i class="fas fa-crown" style="color: #fbbf24;"></i>
-    </div>
+    <div class="logo"></div>
     <h1>SAIKA PREMIUM</h1>
     <div class="badge"><i class="fas fa-shield-alt"></i> PRIVATE VPN</div>
 </div>
@@ -158,7 +165,8 @@
 <div class="tabs">
     <div class="tab active" onclick="switchTab('shop')"><i class="fas fa-store"></i> Магазин</div>
     <div class="tab" onclick="switchTab('profile')"><i class="fas fa-user"></i> Профиль</div>
-    <div class="tab" onclick="switchTab('orders')" id="ordersTab" style="display:none;"><i class="fas fa-clipboard-list"></i> Заказы</div>
+    <div class="tab" onclick="switchTab('myOrders')" id="myOrdersTab"><i class="fas fa-history"></i> Мои заказы</div>
+    <div class="tab" onclick="switchTab('orders')" id="ordersTab" style="display:none;"><i class="fas fa-clipboard-list"></i> Проверка</div>
 </div>
 
 <!-- SHOP -->
@@ -185,11 +193,15 @@
     </div>
 </div>
 
+<!-- MY ORDERS (USER) -->
+<div id="myOrders" class="page">
+    <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;"><i class="fas fa-history" style="color: var(--primary);"></i> История заказов</h3>
+    <div id="myOrdersList"></div>
+</div>
+
 <!-- ORDERS (ADMIN) -->
 <div id="orders" class="page">
-    <div style="margin-bottom: 16px;">
-        <h3 style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
-    </div>
+    <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
     <div id="ordersList" class="orders-list"></div>
 </div>
 
@@ -280,7 +292,7 @@
     let adminSelectedFile = null;
     let currentOrderId = null;
     
-    // Иконки для категорий и товаров (кастомные)
+    // Иконки
     const categoryIcons = {
         vpn: '<i class="fas fa-shield-virus" style="color:#3b82f6;"></i>',
         extra: '<i class="fas fa-cubes" style="color:#8b5cf6;"></i>',
@@ -314,12 +326,38 @@
     // Заказы
     let orders = JSON.parse(localStorage.getItem('saika_orders') || '[]');
     
+        // Проверка новых уведомлений для пользователя
+    function checkUserNotifications() {
+        let userOrders = orders.filter(o => o.userId === currentUser.id);
+        let hasUpdate = userOrders.some(o => o.status === 'confirmed' && !o.userNotified);
+        let hasDeclined = userOrders.some(o => o.status === 'declined' && !o.userNotified);
+        
+        if (hasUpdate) {
+            const updatedOrder = userOrders.find(o => o.status === 'confirmed' && !o.userNotified);
+            if (updatedOrder) {
+                showToast('🎉 Заказ выполнен!', `${updatedOrder.product} - файл отправлен в бот. Проверьте чат с ботом!`, 'success');
+                updatedOrder.userNotified = true;
+                localStorage.setItem('saika_orders', JSON.stringify(orders));
+            }
+        }
+        
+        if (hasDeclined) {
+            const declinedOrder = userOrders.find(o => o.status === 'declined' && !o.userNotified);
+            if (declinedOrder) {
+                showToast('❌ Заказ отклонён', `${declinedOrder.product} - проверьте оплату или свяжитесь с поддержкой`, 'error');
+                declinedOrder.userNotified = true;
+                localStorage.setItem('saika_orders', JSON.stringify(orders));
+            }
+        }
+    }
+    
     function showToast(title, message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         let icon = 'info-circle';
         if (type === 'success') icon = 'check-circle';
         if (type === 'error') icon = 'exclamation-circle';
+        if (type === 'warning') icon = 'exclamation-triangle';
         
         toast.innerHTML = `
             <i class="fas fa-${icon}"></i>
@@ -329,7 +367,7 @@
             </div>
         `;
         document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
+        setTimeout(() => toast.remove(), 5000);
     }
     
     function init() {
@@ -337,7 +375,7 @@
             document.getElementById('ordersTab').style.display = 'block';
         }
         
-       // Профиль
+        // Профиль
         const avatar = document.getElementById('profilePhoto');
         if (currentUser.photo_url) {
             avatar.src = currentUser.photo_url;
@@ -350,6 +388,11 @@
         updateOrdersCount();
         renderProducts();
         renderOrders();
+        renderMyOrders();
+        checkUserNotifications();
+        
+        // Показываем приветствие
+        showToast('👋 Добро пожаловать!', `${currentUser.first_name}, выберите товар в магазине`, 'info');
     }
     
     function updateOrdersCount() {
@@ -387,6 +430,67 @@
                 <i class="fas fa-chevron-right" style="color:var(--text-secondary);"></i>
             </div>
         `;
+    }
+    
+    function renderMyOrders() {
+        let userOrders = orders.filter(o => o.userId === currentUser.id);
+        
+        if (userOrders.length === 0) {
+            document.getElementById('myOrdersList').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-shopping-bag"></i>
+                    <p>У вас пока нет заказов</p>
+                    <button class="btn btn-primary" onclick="switchTab('shop')" style="margin-top:20px;">
+                        <i class="fas fa-store"></i> Перейти в магазин
+                    </button>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        userOrders.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(order => {
+            const date = new Date(order.timestamp).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+            let statusIcon = '⏳';
+            let statusText = 'Ожидает';
+            let statusClass = 'pending';
+            
+            if (order.status === 'confirmed') {
+                statusIcon = '✅';
+                statusText = 'Выполнен';
+                statusClass = 'confirmed';
+            } else if (order.status === 'declined') {
+                statusIcon = '❌';
+                statusText = 'Отклонён';
+                statusClass = 'declined';
+            }
+            
+            html += `
+                <div class="user-order-card">
+                    <div class="user-order-header">
+                        <span class="user-order-product"><i class="fas fa-box"></i> ${order.product}</span>
+                        <span class="order-status ${statusClass}">${statusIcon} ${statusText}</span>
+                    </div>
+                    <div class="user-order-price"><i class="fas fa-ruble-sign"></i> ${order.price} ₽</div>
+                    <div class="user-order-date"><i class="far fa-calendar"></i> ${date}</div>
+                    ${order.comment ? `<div class="order-comment"><i class="fas fa-comment"></i> ${order.comment}</div>` : ''}
+                    ${order.status === 'confirmed' ? `
+                        <div class="user-order-file">
+                            <i class="fas fa-check-circle" style="color:var(--success);"></i> 
+                            Файл отправлен в чат с ботом @vpnsaika_bot
+                        </div>
+                    ` : ''}
+                    ${order.status === 'declined' ? `
+                        <div class="user-order-file" style="background:rgba(239,68,68,0.1);border-color:var(--danger);">
+                            <i class="fas fa-exclamation-circle" style="color:var(--danger);"></i> 
+                            Оплата не подтверждена. Свяжитесь с @saikasupport
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+        
+        document.getElementById('myOrdersList').innerHTML = html;
     }
     
     function renderOrders() {
@@ -442,8 +546,13 @@
             document.querySelectorAll('.tab')[1].classList.add('active');
             document.getElementById('profile').classList.add('active');
             updateOrdersCount();
-        } else if (tab === 'orders' && isAdmin) {
+        } else if (tab === 'myOrders') {
             document.querySelectorAll('.tab')[2].classList.add('active');
+            document.getElementById('myOrders').classList.add('active');
+            renderMyOrders();
+            checkUserNotifications();
+        } else if (tab === 'orders' && isAdmin) {
+            document.querySelectorAll('.tab')[3].classList.add('active');
             document.getElementById('orders').classList.add('active');
             renderOrders();
         }
@@ -508,6 +617,7 @@
                 comment: comment,
                 screenshot: e.target.result,
                 status: 'pending',
+                userNotified: false,
                 timestamp: new Date().toISOString()
             };
             
@@ -519,7 +629,7 @@
                 order: order
             }));
             
-            showToast('✅ Заказ отправлен!', 'Администратор проверит оплату в течение 5-15 минут. Ожидайте файлы в этом чате.', 'success');
+            showToast('✅ Заказ отправлен!', 'Администратор проверит оплату в течение 5-15 минут. Статус заказа можно отслеживать во вкладке "Мои заказы".', 'success');
             
             closeUploadModal();
             updateOrdersCount();
@@ -545,6 +655,7 @@
         if (!order) return;
         
         order.status = 'declined';
+        order.userNotified = false;
         localStorage.setItem('saika_orders', JSON.stringify(orders));
         
         tg.sendData(JSON.stringify({
@@ -552,7 +663,7 @@
             order: order
         }));
         
-        showToast('❌ Заказ отклонён', '', 'error');
+        showToast('❌ Заказ отклонён', `Заказ #${orderId} отклонён`, 'error');
         renderOrders();
     }
     
@@ -588,6 +699,7 @@
             order.status = 'confirmed';
             order.fileSent = true;
             order.fileDescription = description;
+            order.userNotified = false;
             localStorage.setItem('saika_orders', JSON.stringify(orders));
             
             tg.sendData(JSON.stringify({
@@ -598,7 +710,7 @@
                 description: description
             }));
             
-            showToast('✅ Файл отправлен!', `Покупатель @${order.username} получил файл`, 'success');
+            showToast('✅ Файл отправлен!', `Покупатель @${order.username} получит уведомление`, 'success');
             closeSendFileModal();
             renderOrders();
         };
