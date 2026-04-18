@@ -5,476 +5,608 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>SAIKA PREMIUM</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --bg: #0a0b10;
+            --card: #13151f;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text: #ffffff;
+            --text-secondary: #9ca3af;
+            --border: #1f2937;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-        body { background: #0a0f1e; color: #fff; padding: 20px; min-height: 100vh; }
-        
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { width: 80px; height: 80px; background: linear-gradient(135deg, #0088ff, #00ccff); border-radius: 20px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 36px; }
-        h1 { font-size: 24px; font-weight: 700; }
-        
-        .tabs { display: flex; background: #1a2035; border-radius: 16px; padding: 5px; margin-bottom: 20px; }
-        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 12px; cursor: pointer; font-weight: 600; color: #888; transition: 0.3s; }
-        .tab.active { background: #0088ff; color: #fff; }
-        
-        .page { display: none; }
+        body { background: var(--bg); color: var(--text); padding: 16px; min-height: 100vh; padding-bottom: 30px; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 24px; padding-top: 20px; }
+        .logo { 
+            width: 80px; height: 80px; 
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6); 
+            border-radius: 22px; margin: 0 auto 16px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 36px; box-shadow: 0 10px 30px rgba(59,130,246,0.3);
+        }
+        h1 { font-size: 26px; font-weight: 800; background: linear-gradient(135deg, #fff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .badge { display: inline-block; background: rgba(59,130,246,0.2); padding: 4px 12px; border-radius: 20px; font-size: 12px; color: var(--primary); margin-top: 6px; border: 1px solid rgba(59,130,246,0.3); }
+
+        /* Tabs */
+        .tabs { display: flex; background: var(--card); border-radius: 18px; padding: 6px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .tab { flex: 1; padding: 14px; text-align: center; border-radius: 14px; cursor: pointer; font-weight: 600; color: var(--text-secondary); transition: all 0.3s; font-size: 14px; }
+        .tab i { margin-right: 6px; }
+        .tab.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
+
+        /* Pages */
+        .page { display: none; animation: fadeIn 0.3s; }
         .page.active { display: block; }
-        
-        .product-card { background: #1a2035; border-radius: 20px; padding: 18px; margin-bottom: 12px; display: flex; align-items: center; cursor: pointer; border: 1px solid #2a3550; transition: 0.2s; }
-        .product-card:active { background: #252d41; }
-        .product-icon { width: 50px; height: 50px; background: rgba(0,136,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-right: 15px; color: #0088ff; font-size: 22px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Category */
+        .category-title { font-size: 14px; font-weight: 700; color: var(--primary); margin: 24px 0 12px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+        .category-title i { font-size: 18px; }
+
+        /* Product Card */
+        .product-card { background: var(--card); border-radius: 20px; padding: 16px; margin-bottom: 10px; display: flex; align-items: center; cursor: pointer; border: 1px solid var(--border); transition: all 0.2s; }
+        .product-card:active { transform: scale(0.98); background: #1a1e2e; }
+        .product-icon { width: 54px; height: 54px; background: rgba(59,130,246,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-right: 16px; font-size: 24px; border: 1px solid rgba(59,130,246,0.2); }
+        .product-icon img { width: 32px; height: 32px; object-fit: contain; }
         .product-info { flex: 1; }
-        .product-name { font-weight: 700; margin-bottom: 5px; }
-        .price-new { color: #00ff88; font-size: 20px; font-weight: 700; }
-        .price-old { color: #ff3b3b; text-decoration: line-through; font-size: 14px; margin-left: 8px; }
-        .stock { font-size: 12px; color: #666; margin-top: 5px; }
+        .product-name { font-weight: 700; margin-bottom: 6px; font-size: 16px; }
+        .price-box { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .price-new { color: var(--success); font-size: 20px; font-weight: 800; }
+        .price-old { color: var(--danger); text-decoration: line-through; font-size: 13px; opacity: 0.8; }
+        .stock { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+        .stock i { margin-right: 4px; font-size: 10px; }
+
+        /* Profile */
+        .profile-card { background: var(--card); border-radius: 24px; padding: 28px 20px; text-align: center; border: 1px solid var(--border); }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 30px; border: 3px solid var(--primary); margin-bottom: 16px; object-fit: cover; }
+        .profile-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+        .profile-id { color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; }
+        .stats { display: flex; gap: 12px; margin-top: 20px; }
+        .stat { flex: 1; background: rgba(255,255,255,0.03); padding: 16px; border-radius: 18px; border: 1px solid var(--border); }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .stat-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px; }
+
+        /* Orders List */
+        .orders-list { display: flex; flex-direction: column; gap: 12px; }
+        .order-card { background: var(--card); border-radius: 20px; padding: 18px; border: 1px solid var(--border); }
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .order-user { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .order-user i { color: var(--primary); }
+        .order-status { font-size: 11px; padding: 5px 12px; border-radius: 20px; font-weight: 600; text-transform: uppercase; }
+        .order-status.pending { background: rgba(245,158,11,0.2); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
+        .order-status.confirmed { background: rgba(16,185,129,0.2); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+        .order-status.declined { background: rgba(239,68,68,0.2); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+        .order-product { font-weight: 700; margin-bottom: 6px; font-size: 16px; }
+        .order-price { color: var(--success); font-weight: 700; margin-bottom: 8px; }
+        .order-comment { color: var(--text-secondary); font-size: 13px; margin: 8px 0; padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 12px; }
+        .order-screenshot { margin: 12px 0; }
+        .order-screenshot img { max-width: 100%; border-radius: 16px; max-height: 200px; cursor: pointer; border: 1px solid var(--border); }
+        .order-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .order-actions .btn { flex: 1; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); padding: 20px; overflow-y: auto; z-index: 1000; }
+        .modal-content { max-width: 500px; margin: 20px auto; background: var(--card); border-radius: 28px; padding: 28px; border: 1px solid var(--border); }
+        .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .modal-title i { color: var(--primary); }
+
+        /* Bank Details */
+        .bank-box { background: rgba(0,0,0,0.3); border-radius: 20px; padding: 20px; margin: 20px 0; border: 1px solid var(--border); }
+        .bank-row { margin-bottom: 16px; }
+        .bank-row:last-child { margin-bottom: 0; }
+        .bank-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 1px; }
+        .bank-value { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 12px; font-family: 'Courier New', monospace; }
+        .copy-btn { background: var(--border); border: none; color: var(--text); padding: 6px 14px; border-radius: 10px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .copy-btn:active { background: var(--primary); }
+
+        /* Upload Area */
+        .upload-area { background: rgba(59,130,246,0.05); border: 2px dashed var(--primary); border-radius: 24px; padding: 36px 20px; text-align: center; margin: 20px 0; cursor: pointer; transition: 0.3s; }
+        .upload-area i { font-size: 48px; color: var(--primary); margin-bottom: 12px; }
+        .upload-area:active { background: rgba(59,130,246,0.1); }
+        .preview-image { max-width: 100%; border-radius: 20px; margin: 16px 0; display: none; border: 1px solid var(--border); }
+
+        /* Inputs */
+        textarea, input[type="text"] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 18px; padding: 16px; color: var(--text); font-size: 14px; margin: 16px 0; resize: vertical; }
+        textarea:focus { outline: none; border-color: var(--primary); }
+
+        /* Buttons */
+        .btn { padding: 16px 20px; border-radius: 18px; border: none; font-weight: 700; font-size: 15px; cursor: pointer; transition: all 0.2s; text-align: center; display: block; width: 100%; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(59,130,246,0.3); }
+        .btn-success { background: var(--success); color: white; box-shadow: 0 8px 20px rgba(16,185,129,0.3); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-group { display: flex; gap: 12px; margin-top: 20px; }
+        .btn-group .btn { flex: 1; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 30px; left: 20px; right: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 2000; animation: slideUp 0.3s; max-width: 500px; margin: 0 auto; }
+        .toast i { font-size: 24px; }
+        .toast.success i { color: var(--success); }
+        .toast.error i { color: var(--danger); }
+        .toast.info i { color: var(--primary); }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: 700; margin-bottom: 4px; }
+        .toast-message { font-size: 13px; color: var(--text-secondary); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Icons */
+        .icon { width: 24px; height: 24px; }
         
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0a0f1e; padding: 20px; overflow-y: auto; z-index: 1000; }
-        .modal-content { max-width: 500px; margin: 20px auto; background: #1a2035; border-radius: 24px; padding: 25px; border: 1px solid #2a3550; }
-        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; text-align: center; color: #0088ff; }
-        
-        .bank-details { background: #0d1220; border-radius: 16px; padding: 20px; margin: 20px 0; border: 1px solid #2a3550; }
-        .bank-row { margin-bottom: 12px; }
-        .bank-label { font-size: 11px; color: #888; text-transform: uppercase; }
-        .bank-value { font-size: 16px; font-weight: 600; font-family: 'Courier New', monospace; }
-        
-        .btn { background: #0088ff; color: #fff; padding: 16px; border-radius: 14px; text-align: center; font-weight: 700; cursor: pointer; margin: 10px 0; border: none; width: 100%; font-size: 15px; }
-        .btn-success { background: #00ff88; color: #000; }
-        .btn-danger { background: #ff3b3b; }
-        .btn-outline { background: transparent; border: 1px solid #2a3550; }
-        
-        .upload-area { border: 2px dashed #0088ff; border-radius: 20px; padding: 30px; text-align: center; margin: 20px 0; cursor: pointer; background: #0d1220; }
-        .upload-area i { font-size: 40px; color: #0088ff; margin-bottom: 10px; }
-        
-        #previewImage { max-width: 100%; border-radius: 16px; margin: 15px 0; display: none; }
-        
-        textarea { width: 100%; background: #0d1220; border: 1px solid #2a3550; border-radius: 14px; padding: 15px; color: #fff; margin: 15px 0; font-size: 14px; resize: vertical; }
-        
-        .order-card { background: #1a2035; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a3550; }
-        .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .order-user { font-weight: 700; }
-        .order-status { font-size: 12px; padding: 4px 10px; border-radius: 20px; background: #2a3550; }
-        .order-status.pending { background: #ffaa00; color: #000; }
-        .order-status.confirmed { background: #00ff88; color: #000; }
-        .order-product { margin-bottom: 8px; }
-        .order-price { color: #00ff88; font-weight: 700; }
-        .order-screenshot { margin-top: 10px; }
-        .order-screenshot img { max-width: 100%; border-radius: 12px; max-height: 200px; }
-        .order-actions { display: flex; gap: 10px; margin-top: 15px; }
-        .order-actions .btn { padding: 10px; font-size: 13px; }
+        /* Empty state */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-secondary); }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">👑</div>
-        <h1>SAIKA PREMIUM</h1>
-    </div>
 
-    <div class="tabs">
-        <div class="tab active" onclick="switchTab('shop')">🛍️ Магазин</div>
-        <div class="tab" onclick="switchTab('profile')">👤 Профиль</div>
-        <div class="tab" onclick="switchTab('orders')" id="ordersTab" style="display:none;">📋 Заказы</div>
+<div class="header">
+    <div class="logo">
+        <i class="fas fa-crown" style="color: #fbbf24;"></i>
     </div>
+    <h1>SAIKA PREMIUM</h1>
+    <div class="badge"><i class="fas fa-shield-alt"></i> PRIVATE VPN</div>
+</div>
 
-    <!-- МАГАЗИН -->
-    <div id="shop" class="page active">
-        <div id="productsList"></div>
-    </div>
+<div class="tabs">
+    <div class="tab active" onclick="switchTab('shop')"><i class="fas fa-store"></i> Магазин</div>
+    <div class="tab" onclick="switchTab('profile')"><i class="fas fa-user"></i> Профиль</div>
+    <div class="tab" onclick="switchTab('orders')" id="ordersTab" style="display:none;"><i class="fas fa-clipboard-list"></i> Заказы</div>
+</div>
 
-    <!-- ПРОФИЛЬ -->
-    <div id="profile" class="page">
-        <div class="modal-content" style="margin-top:0;">
-            <div style="text-align:center;">
-                <img id="profilePhoto" src="" style="width:100px;height:100px;border-radius:50%;margin-bottom:15px;">
-                <h3 id="profileName"></h3>
-                <p id="profileId" style="color:#888;"></p>
+<!-- SHOP -->
+<div id="shop" class="page active">
+    <div id="productsList"></div>
+</div>
+
+<!-- PROFILE -->
+<div id="profile" class="page">
+    <div class="profile-card">
+        <img id="profilePhoto" class="profile-avatar" src="">
+        <h3 id="profileName" class="profile-name"></h3>
+        <p id="profileId" class="profile-id"></p>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="ordersCount">0</div>
+                <div class="stat-label">Заказов</div>
             </div>
-            <div style="margin-top:20px;">
-                <p><b>Статус:</b> 👑 Premium Client</p>
-                <p><b>Заказов:</b> <span id="ordersCount">0</span></p>
+            <div class="stat">
+                <div class="stat-value"><i class="fas fa-crown" style="color: #fbbf24;"></i></div>
+                <div class="stat-label">Premium</div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- ЗАКАЗЫ (АДМИН) -->
-    <div id="orders" class="page">
-        <div class="modal-content" style="margin-top:0;">
-            <h3 style="margin-bottom:20px;">📋 Заказы на проверку</h3>
-            <div id="ordersList"></div>
-        </div>
+<!-- ORDERS (ADMIN) -->
+<div id="orders" class="page">
+    <div style="margin-bottom: 16px;">
+        <h3 style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
     </div>
+    <div id="ordersList" class="orders-list"></div>
+</div>
 
-    <!-- МОДАЛКА ОПЛАТЫ -->
-    <div class="modal" id="payModal">
-        <div class="modal-content">
-            <div class="modal-title">💳 Оформление заказа</div>
-            <h3 id="payProduct"></h3>
-            <div style="font-size:36px;color:#00ff88;margin:15px 0;" id="payPrice"></div>
-            
-            <div class="bank-details">
-                <div class="bank-row">
-                    <div class="bank-label">Банк</div>
-                    <div class="bank-value">Т-Банк</div>
+<!-- PAYMENT MODAL -->
+<div class="modal" id="payModal">
+    <div class="modal-content">
+        <div class="modal-title"><i class="fas fa-credit-card"></i> Оформление</div>
+        <h3 id="payProduct" style="text-align:center;"></h3>
+        <div style="font-size:42px;font-weight:800;color:var(--success);text-align:center;margin:20px 0;" id="payPrice"></div>
+        
+        <div class="bank-box">
+            <div class="bank-row">
+                <div class="bank-label"><i class="fas fa-university"></i> Банк</div>
+                <div class="bank-value">Т-Банк</div>
+            </div>
+            <div class="bank-row">
+                <div class="bank-label"><i class="fas fa-credit-card"></i> Номер карты</div>
+                <div class="bank-value">
+                    2200 7021 4895 7363
+                    <button class="copy-btn" onclick="copyCard()"><i class="fas fa-copy"></i> Копировать</button>
                 </div>
-                <div class="bank-row">
-                    <div class="bank-label">Карта</div>
-                    <div class="bank-value" style="display:flex;align-items:center;gap:10px;">
-                        2200 7021 4895 7363
-                        <button onclick="copyCard()" style="background:#2a3550;border:none;color:#fff;padding:5px 10px;border-radius:8px;cursor:pointer;">📋</button>
+            </div>
+            <div class="bank-row">
+                <div class="bank-label"><i class="fas fa-user"></i> Получатель</div>
+                <div class="bank-value">Саид К.</div>
+            </div>
+        </div>
+        
+        <button class="btn btn-success" onclick="openUploadModal()"><i class="fas fa-check-circle"></i> Я ОПЛАТИЛ</button>
+        <button class="btn btn-outline" onclick="closePayModal()" style="margin-top:10px;"><i class="fas fa-times"></i> Отмена</button>
+    </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal" id="uploadModal">
+    <div class="modal-content">
+        <div class="modal-title"><i class="fas fa-cloud-upload-alt"></i> Загрузить чек</div>
+        <h3 id="uploadProduct" style="text-align:center;"></h3>
+        
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p style="font-weight:600;">Нажмите или перетащите</p>
+            <p style="font-size:12px;color:var(--text-secondary);">JPG, PNG до 10MB</p>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(this)">
+        
+        <img id="previewImage" class="preview-image" src="" alt="Preview">
+        
+        <textarea id="orderComment" placeholder="Комментарий (время, сумма, детали)..."></textarea>
+        
+        <button class="btn btn-success" id="sendBtn" onclick="sendOrder()" disabled><i class="fas fa-paper-plane"></i> ОТПРАВИТЬ НА ПРОВЕРКУ</button>
+        <button class="btn btn-outline" onclick="closeUploadModal()" style="margin-top:10px;">Назад</button>
+    </div>
+</div>
+
+<!-- SEND FILE MODAL (ADMIN) -->
+<div class="modal" id="sendFileModal">
+    <div class="modal-content">
+        <div class="modal-title"><i class="fas fa-file-upload"></i> Отправить файл</div>
+        <h3 id="sendFileProduct" style="text-align:center;"></h3>
+        <p id="sendFileUser" style="text-align:center;color:var(--text-secondary);"></p>
+        
+        <div class="upload-area" onclick="document.getElementById('adminFileInput').click()">
+            <i class="fas fa-file"></i>
+            <p style="font-weight:600;" id="fileSelectText">Выберите файл для отправки</p>
+            <p style="font-size:12px;color:var(--text-secondary);" id="selectedFileName"></p>
+        </div>
+        <input type="file" id="adminFileInput" style="display:none;" onchange="handleAdminFileSelect(this)">
+        
+        <textarea id="fileDescription" placeholder="Описание к файлу..."></textarea>
+        
+        <button class="btn btn-success" id="sendFileBtn" onclick="sendFileToUser()" disabled><i class="fas fa-paper-plane"></i> ОТПРАВИТЬ ПОКУПАТЕЛЮ</button>
+        <button class="btn btn-outline" onclick="closeSendFileModal()" style="margin-top:10px;">Отмена</button>
+    </div>
+</div>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.ready();
+    
+    const ADMIN_IDS = [1471307057, 1234567890];
+    let currentUser = tg.initDataUnsafe.user || {};
+    let isAdmin = ADMIN_IDS.includes(currentUser.id);
+    
+    let currentProduct = null;
+    let selectedFile = null;
+    let adminSelectedFile = null;
+    let currentOrderId = null;
+    
+    // Иконки для категорий и товаров (кастомные)
+    const categoryIcons = {
+        vpn: '<i class="fas fa-shield-virus" style="color:#3b82f6;"></i>',
+        extra: '<i class="fas fa-cubes" style="color:#8b5cf6;"></i>',
+        dns: '<i class="fas fa-globe" style="color:#10b981;"></i>'
+    };
+    
+    const products = {
+        vpn: [
+            {name:"SAIKA S1 VPN", price:79, old:1199, stock:"9", icon:'<i class="fas fa-bolt"></i>'},
+            {name:"VIP VPN", price:79, old:529, stock:"10", icon:'<i class="fas fa-crown" style="color:#fbbf24;"></i>'},
+            {name:"GTR VPN", price:79, old:899, stock:"∞", icon:'<i class="fas fa-car"></i>'},
+            {name:"ULTRA MAX VPN", price:79, old:629, stock:"8", icon:'<i class="fas fa-fire"></i>'},
+            {name:"STRONG VPN", price:79, old:499, stock:"∞", icon:'<i class="fas fa-dumbbell"></i>'},
+            {name:"UNLY VPN", price:79, old:399, stock:"∞", icon:'<i class="fas fa-infinity"></i>'},
+            {name:"TDM SKILL VPN", price:79, old:199, stock:"∞", icon:'<i class="fas fa-crosshairs"></i>'},
+            {name:"FUCK VPN", price:49, old:139, stock:"∞", icon:'<i class="fas fa-skull"></i>'},
+            {name:"DEAD ALL VPN", price:79, old:1299, stock:"∞", icon:'<i class="fas fa-ghost"></i>'}
+        ],
+        extra: [
+            {name:"Магнит андроид", price:169, old:259, stock:"∞", icon:'<i class="fab fa-android"></i>'},
+            {name:"Магнит ios", price:269, old:null, stock:"∞", icon:'<i class="fab fa-apple"></i>'},
+            {name:"Пак сайки", price:639, old:1789, stock:"∞", icon:'<i class="fas fa-box-open"></i>'},
+            {name:"Пак unly", price:79, old:1299, stock:"10", icon:'<i class="fas fa-archive"></i>'}
+        ],
+        dns: [
+            {name:"DNS android", price:129, old:239, stock:"∞", icon:'<i class="fas fa-network-wired"></i>'},
+            {name:"DNS Ios", price:129, old:239, stock:"∞", icon:'<i class="fas fa-wifi"></i>'}
+        ]
+    };
+    
+    // Заказы
+    let orders = JSON.parse(localStorage.getItem('saika_orders') || '[]');
+    
+    function showToast(title, message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        let icon = 'info-circle';
+        if (type === 'success') icon = 'check-circle';
+        if (type === 'error') icon = 'exclamation-circle';
+        
+        toast.innerHTML = `
+            <i class="fas fa-${icon}"></i>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+    
+    function init() {
+        if (isAdmin) {
+            document.getElementById('ordersTab').style.display = 'block';
+        }
+        
+       // Профиль
+        const avatar = document.getElementById('profilePhoto');
+        if (currentUser.photo_url) {
+            avatar.src = currentUser.photo_url;
+        } else {
+            avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.first_name || 'U') + '&background=3b82f6&color=fff&size=100';
+        }
+        document.getElementById('profileName').innerText = currentUser.first_name + (currentUser.last_name ? ' ' + currentUser.last_name : '');
+        document.getElementById('profileId').innerHTML = '<i class="fas fa-id-card"></i> ID: ' + currentUser.id;
+        
+        updateOrdersCount();
+        renderProducts();
+        renderOrders();
+    }
+    
+    function updateOrdersCount() {
+        let userOrders = orders.filter(o => o.userId === currentUser.id);
+        document.getElementById('ordersCount').innerText = userOrders.length;
+    }
+    
+    function renderProducts() {
+        let html = '';
+        
+        html += `<div class="category-title">${categoryIcons.vpn} VPN ДЛЯ PUBG</div>`;
+        products.vpn.forEach(p => html += renderProductCard(p));
+        
+        html += `<div class="category-title">${categoryIcons.extra} МАГНИТ & ПАКИ</div>`;
+        products.extra.forEach(p => html += renderProductCard(p));
+        
+        html += `<div class="category-title">${categoryIcons.dns} DNS СЕРВИСЫ</div>`;
+        products.dns.forEach(p => html += renderProductCard(p));
+        
+        document.getElementById('productsList').innerHTML = html;
+    }
+    
+    function renderProductCard(p) {
+        return `
+            <div class="product-card" onclick="openPayModal('${p.name}', ${p.price})">
+                <div class="product-icon">${p.icon}</div>
+                <div class="product-info">
+                    <div class="product-name">${p.name}</div>
+                    <div class="price-box">
+                        <span class="price-new">${p.price} ₽</span>
+                        ${p.old ? `<span class="price-old">${p.old} ₽</span>` : ''}
                     </div>
+                    <div class="stock"><i class="fas fa-box"></i> В наличии: ${p.stock} шт.</div>
                 </div>
-                <div class="bank-row">
-                    <div class="bank-label">Получатель</div>
-                    <div class="bank-value">Саид К.</div>
+                <i class="fas fa-chevron-right" style="color:var(--text-secondary);"></i>
+            </div>
+        `;
+    }
+    
+    function renderOrders() {
+        if (!isAdmin) return;
+        
+        let pendingOrders = orders.filter(o => o.status === 'pending');
+        if (pendingOrders.length === 0) {
+            document.getElementById('ordersList').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>Нет заказов на проверку</p>
                 </div>
-            </div>
-            
-            <button class="btn btn-success" onclick="openUploadModal()">✅ Я ОПЛАТИЛ, ЗАГРУЗИТЬ ЧЕК</button>
-            <button class="btn btn-outline" onclick="closePayModal()">Отмена</button>
-        </div>
-    </div>
-
-    <!-- МОДАЛКА ЗАГРУЗКИ ЧЕКА -->
-    <div class="modal" id="uploadModal">
-        <div class="modal-content">
-            <div class="modal-title">📎 Загрузите чек</div>
-            <h3 id="uploadProduct"></h3>
-            
-            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                <div>📸</div>
-                <p>Нажмите чтобы выбрать скриншот</p>
-                <p style="font-size:12px;color:#888;">JPG, PNG до 10MB</p>
-            </div>
-            <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(this)">
-            
-            <img id="previewImage" src="" alt="Preview">
-            
-            <textarea id="orderComment" placeholder="Комментарий к платежу..."></textarea>
-            
-            <button class="btn btn-success" id="sendBtn" onclick="sendOrder()" disabled>📤 ОТПРАВИТЬ НА ПРОВЕРКУ</button>
-            <button class="btn btn-outline" onclick="closeUploadModal()">Назад</button>
-        </div>
-    </div>
-
-    <!-- МОДАЛКА ОТПРАВКИ ФАЙЛА (АДМИН) -->
-    <div class="modal" id="sendFileModal">
-        <div class="modal-content">
-            <div class="modal-title">📁 Отправить файл</div>
-            <h3 id="sendFileProduct"></h3>
-            <p id="sendFileUser"></p>
-            
-            <div class="upload-area" onclick="document.getElementById('adminFileInput').click()">
-                <div>📁</div>
-                <p>Выберите файл для отправки</p>
-            </div>
-            <input type="file" id="adminFileInput" style="display:none;" onchange="handleAdminFileSelect(this)">
-            
-            <textarea id="fileDescription" placeholder="Описание к файлу..."></textarea>
-            
-            <button class="btn btn-success" id="sendFileBtn" onclick="sendFileToUser()" disabled>📤 ОТПРАВИТЬ ПОКУПАТЕЛЮ</button>
-            <button class="btn btn-outline" onclick="closeSendFileModal()">Отмена</button>
-        </div>
-    </div>
-
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
-        
-        const ADMIN_IDS = [1471307057, 1234567890]; // ID админов
-        let currentUser = tg.initDataUnsafe.user || {};
-        let isAdmin = ADMIN_IDS.includes(currentUser.id);
-        
-        let currentProduct = null;
-        let selectedFile = null;
-        let adminSelectedFile = null;
-        let currentOrderId = null;
-        
-        // Товары
-        const products = {
-            vpn: [
-                {name:"SAIKA S1 VPN", price:79, old:1199, stock:"9", icon:"🚀"},
-                {name:"VIP VPN", price:79, old:529, stock:"10", icon:"👑"},
-                {name:"GTR VPN", price:79, old:899, stock:"∞", icon:"🏎️"},
-                {name:"ULTRA MAX VPN", price:79, old:629, stock:"8", icon:"🔥"},
-                {name:"STRONG VPN", price:79, old:499, stock:"∞", icon:"💪"},
-                {name:"UNLY VPN", price:79, old:399, stock:"∞", icon:"♾️"},
-                {name:"TDM SKILL VPN", price:79, old:199, stock:"∞", icon:"🎯"},
-                {name:"FUCK VPN", price:49, old:139, stock:"∞", icon:"☠️"},
-                {name:"DEAD ALL VPN", price:79, old:1299, stock:"∞", icon:"👻"}
-            ],
-            extra: [
-                {name:"Магнит андроид", price:169, old:259, stock:"∞", icon:"📱"},
-                {name:"Магнит ios", price:269, old:null, stock:"∞", icon:"🍎"},
-                {name:"Пак сайки", price:639, old:1789, stock:"∞", icon:"📦"},
-                {name:"Пак unly", price:79, old:1299, stock:"10", icon:"📁"}
-            ],
-            dns: [
-                {name:"DNS android", price:129, old:239, stock:"∞", icon:"🌐"},
-                {name:"DNS Ios", price:129, old:239, stock:"∞", icon:"📲"}
-            ]
-        };
-        
-        // Заказы (в памяти)
-        let orders = JSON.parse(localStorage.getItem('saika_orders') || '[]');
-        
-        function init() {
-            // Показываем вкладку Заказы для админа
-            if (isAdmin) {
-                document.getElementById('ordersTab').style.display = 'block';
-            }
-            
-            // Профиль
-            document.getElementById('profilePhoto').src = currentUser.photo_url || 'https://via.placeholder.com/100';
-            document.getElementById('profileName').innerText = currentUser.first_name + (currentUser.last_name ? ' ' + currentUser.last_name : '');
-            document.getElementById('profileId').innerText = 'ID: ' + currentUser.id;
-            
-            let userOrders = orders.filter(o => o.userId === currentUser.id);
-            document.getElementById('ordersCount').innerText = userOrders.length;
-            
-            renderProducts();
-            renderOrders();
+            `;
+            return;
         }
         
-        function renderProducts() {
-            let html = '';
-            
-            html += '<div style="margin:20px 0 10px;color:#0088ff;font-weight:700;">🔒 VPN ДЛЯ PUBG</div>';
-            products.vpn.forEach(p => html += renderProductCard(p));
-            
-            html += '<div style="margin:30px 0 10px;color:#0088ff;font-weight:700;">📦 МАГНИТ & ПАКИ</div>';
-            products.extra.forEach(p => html += renderProductCard(p));
-            
-            html += '<div style="margin:30px 0 10px;color:#0088ff;font-weight:700;">🌐 DNS СЕРВИСЫ</div>';
-            products.dns.forEach(p => html += renderProductCard(p));
-            
-            document.getElementById('productsList').innerHTML = html;
-        }
-        
-        function renderProductCard(p) {
-            return `
-                <div class="product-card" onclick="openPayModal('${p.name}', ${p.price})">
-                    <div class="product-icon">${p.icon}</div>
-                    <div class="product-info">
-                        <div class="product-name">${p.name}</div>
-                        <div>
-                            <span class="price-new">${p.price} ₽</span>
-                            ${p.old ? `<span class="price-old">${p.old} ₽</span>` : ''}
+        let html = '';
+        pendingOrders.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(order => {
+            const date = new Date(order.timestamp).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+            html += `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-user"><i class="fas fa-user"></i> @${order.username || 'User'}</span>
+                        <span class="order-status pending"><i class="fas fa-clock"></i> Ожидает</span>
+                    </div>
+                    <div class="order-product"><i class="fas fa-tag"></i> ${order.product}</div>
+                    <div class="order-price"><i class="fas fa-ruble-sign"></i> ${order.price} ₽</div>
+                    <div style="color:var(--text-secondary);font-size:12px;margin:5px 0;"><i class="fas fa-id-card"></i> ID: ${order.userId} | ${date}</div>
+                    ${order.comment ? `<div class="order-comment"><i class="fas fa-comment"></i> ${order.comment}</div>` : ''}
+                    ${order.screenshot ? `
+                        <div class="order-screenshot">
+                            <img src="${order.screenshot}" onclick="window.open('${order.screenshot}')" style="cursor:pointer;">
                         </div>
-                        <div class="stock">В наличии: ${p.stock} шт.</div>
+                    ` : ''}
+                    <div class="order-actions">
+                        <button class="btn btn-success" onclick="confirmOrder('${order.id}')"><i class="fas fa-check"></i> Подтвердить</button>
+                        <button class="btn btn-danger" onclick="declineOrder('${order.id}')"><i class="fas fa-times"></i> Отклонить</button>
                     </div>
                 </div>
             `;
-        }
+        });
+        document.getElementById('ordersList').innerHTML = html;
+    }
+    
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         
-        function renderOrders() {
-            if (!isAdmin) return;
-            
-            let pendingOrders = orders.filter(o => o.status === 'pending');
-            if (pendingOrders.length === 0) {
-                document.getElementById('ordersList').innerHTML = '<p style="color:#888;text-align:center;">Нет заказов на проверку</p>';
-                return;
-            }
-            
-            let html = '';
-            pendingOrders.forEach(order => {
-                html += `
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-user">@${order.username || 'User'} (ID: ${order.userId})</span>
-                            <span class="order-status pending">⏳ Ожидает</span>
-                        </div>
-                        <div class="order-product"><b>${order.product}</b></div>
-                        <div class="order-price">${order.price} ₽</div>
-                        ${order.comment ? `<div style="color:#888;font-size:13px;margin-top:8px;">💬 ${order.comment}</div>` : ''}
-                        ${order.screenshot ? `
-                            <div class="order-screenshot">
-                                <img src="${order.screenshot}" onclick="window.open('${order.screenshot}')">
-                            </div>
-                        ` : ''}
-                        <div class="order-actions">
-                            <button class="btn btn-success" onclick="confirmOrder('${order.id}')">✅ Подтвердить</button>
-                            <button class="btn btn-danger" onclick="declineOrder('${order.id}')">❌ Отклонить</button>
-                        </div>
-                    </div>
-                `;
-            });
-            document.getElementById('ordersList').innerHTML = html;
+        if (tab === 'shop') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.getElementById('shop').classList.add('active');
+        } else if (tab === 'profile') {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('profile').classList.add('active');
+            updateOrdersCount();
+        } else if (tab === 'orders' && isAdmin) {
+            document.querySelectorAll('.tab')[2].classList.add('active');
+            document.getElementById('orders').classList.add('active');
+            renderOrders();
         }
-        
-        function switchTab(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            
-            if (tab === 'shop') {
-                document.querySelectorAll('.tab')[0].classList.add('active');
-                document.getElementById('shop').classList.add('active');
-            } else if (tab === 'profile') {
-                document.querySelectorAll('.tab')[1].classList.add('active');
-                document.getElementById('profile').classList.add('active');
-            } else if (tab === 'orders' && isAdmin) {
-                document.querySelectorAll('.tab')[2].classList.add('active');
-                document.getElementById('orders').classList.add('active');
-                renderOrders();
-            }
-        }
-        
-        function openPayModal(name, price) {
-            currentProduct = {name, price};
-            document.getElementById('payProduct').innerText = name;
-            document.getElementById('payPrice').innerText = price + ' ₽';
-            document.getElementById('payModal').style.display = 'block';
-        }
-        
-        function closePayModal() {
-            document.getElementById('payModal').style.display = 'none';
-        }
-        
-        function copyCard() {
-            navigator.clipboard?.writeText('2200702148957363');
-            tg.showPopup({title: '✅ Скопировано', message: 'Номер карты в буфере', buttons: [{type: 'ok'}]});
-        }
-        
-        function openUploadModal() {
-            closePayModal();
-            document.getElementById('uploadProduct').innerText = currentProduct.name + ' - ' + currentProduct.price + ' ₽';
-            document.getElementById('uploadModal').style.display = 'block';
-        }
-        
-        function closeUploadModal() {
-            document.getElementById('uploadModal').style.display = 'none';
-            selectedFile = null;
-            document.getElementById('previewImage').style.display = 'none';
-            document.getElementById('sendBtn').disabled = true;
-            document.getElementById('fileInput').value = '';
-        }
-        
-        function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                selectedFile = input.files[0];
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('previewImage').src = e.target.result;
-                    document.getElementById('previewImage').style.display = 'block';
-                    document.getElementById('sendBtn').disabled = false;
-                };
-                reader.readAsDataURL(selectedFile);
-            }
-        }
-        
-        function sendOrder() {
-            const comment = document.getElementById('orderComment').value;
-            
+    }
+    
+    function openPayModal(name, price) {
+        currentProduct = {name, price};
+        document.getElementById('payProduct').innerHTML = `<i class="fas fa-shopping-cart"></i> ${name}`;
+        document.getElementById('payPrice').innerText = price + ' ₽';
+        document.getElementById('payModal').style.display = 'block';
+    }
+    
+    function closePayModal() {
+        document.getElementById('payModal').style.display = 'none';
+    }
+    
+    function copyCard() {
+        navigator.clipboard?.writeText('2200702148957363');
+        showToast('✅ Скопировано', 'Номер карты в буфере обмена', 'success');
+    }
+    
+    function openUploadModal() {
+        closePayModal();
+        document.getElementById('uploadProduct').innerHTML = `<i class="fas fa-file-invoice"></i> ${currentProduct.name} - ${currentProduct.price} ₽`;
+        document.getElementById('uploadModal').style.display = 'block';
+    }
+    
+    function closeUploadModal() {
+        document.getElementById('uploadModal').style.display = 'none';
+        selectedFile = null;
+        document.getElementById('previewImage').style.display = 'none';
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('fileInput').value = '';
+        document.getElementById('orderComment').value = '';
+    }
+    
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            selectedFile = input.files[0];
             const reader = new FileReader();
             reader.onload = (e) => {
-                const orderId = Date.now() + '_' + currentUser.id;
-                const order = {
-                    id: orderId,
-                    userId: currentUser.id,
-                    username: currentUser.username || currentUser.first_name,
-                    product: currentProduct.name,
-                    price: currentProduct.price,
-                    comment: comment,
-                    screenshot: e.target.result,
-                    status: 'pending',
-                    timestamp: new Date().toISOString()
-                };
-                
-                orders.push(order);
-                localStorage.setItem('saika_orders', JSON.stringify(orders));
-                
-                      // Отправляем данные боту
-                tg.sendData(JSON.stringify({
-                    action: 'new_order',
-                    order: order
-                }));
-                
-                tg.showPopup({
-                    title: '✅ Заказ отправлен!',
-                    message: 'Администратор проверит оплату и отправит файлы',
-                    buttons: [{type: 'ok'}]
-                });
-                
-                closeUploadModal();
+                document.getElementById('previewImage').src = e.target.result;
+                document.getElementById('previewImage').style.display = 'block';
+                document.getElementById('sendBtn').disabled = false;
+            };
+            reader.readAsDataURL(selectedFile);
+        }
+    }
+    
+    function sendOrder() {
+        const comment = document.getElementById('orderComment').value;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const orderId = Date.now() + '_' + currentUser.id;
+            const order = {
+                id: orderId,
+                userId: currentUser.id,
+                username: currentUser.username || currentUser.first_name,
+                product: currentProduct.name,
+                price: currentProduct.price,
+                comment: comment,
+                screenshot: e.target.result,
+                status: 'pending',
+                timestamp: new Date().toISOString()
             };
             
-            if (selectedFile) {
-                reader.readAsDataURL(selectedFile);
-            }
-        }
-        
-        function confirmOrder(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            currentOrderId = orderId;
-            document.getElementById('sendFileProduct').innerText = order.product;
-            document.getElementById('sendFileUser').innerText = `Покупатель: @${order.username} (ID: ${order.userId})`;
-            document.getElementById('sendFileModal').style.display = 'block';
-        }
-        
-        function declineOrder(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
-            
-            order.status = 'declined';
+            orders.push(order);
             localStorage.setItem('saika_orders', JSON.stringify(orders));
             
             tg.sendData(JSON.stringify({
-                action: 'decline_order',
+                action: 'new_order',
                 order: order
             }));
             
-            tg.showPopup({title: '❌ Заказ отклонён', message: '', buttons: [{type: 'ok'}]});
+            showToast('✅ Заказ отправлен!', 'Администратор проверит оплату в течение 5-15 минут. Ожидайте файлы в этом чате.', 'success');
+            
+            closeUploadModal();
+            updateOrdersCount();
+        };
+        
+        if (selectedFile) {
+            reader.readAsDataURL(selectedFile);
+        }
+    }
+    
+    function confirmOrder(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+        
+        currentOrderId = orderId;
+        document.getElementById('sendFileProduct').innerHTML = `<i class="fas fa-box"></i> ${order.product}`;
+        document.getElementById('sendFileUser').innerHTML = `<i class="fas fa-user"></i> @${order.username} (ID: ${order.userId})`;
+        document.getElementById('sendFileModal').style.display = 'block';
+    }
+    
+    function declineOrder(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+        
+        order.status = 'declined';
+        localStorage.setItem('saika_orders', JSON.stringify(orders));
+        
+        tg.sendData(JSON.stringify({
+            action: 'decline_order',
+            order: order
+        }));
+        
+        showToast('❌ Заказ отклонён', '', 'error');
+        renderOrders();
+    }
+    
+    function closeSendFileModal() {
+        document.getElementById('sendFileModal').style.display = 'none';
+        adminSelectedFile = null;
+        document.getElementById('sendFileBtn').disabled = true;
+        document.getElementById('adminFileInput').value = '';
+        document.getElementById('fileSelectText').innerHTML = 'Выберите файл для отправки';
+        document.getElementById('selectedFileName').innerHTML = '';
+        document.getElementById('fileDescription').value = '';
+    }
+    
+    function handleAdminFileSelect(input) {
+        if (input.files && input.files[0]) {
+            adminSelectedFile = input.files[0];
+            document.getElementById('fileSelectText').innerHTML = '<i class="fas fa-check-circle" style="color:var(--success);"></i> Файл выбран';
+            document.getElementById('selectedFileName').innerHTML = adminSelectedFile.name + ' (' + (adminSelectedFile.size / 1024).toFixed(1) + ' KB)';
+            document.getElementById('sendFileBtn').disabled = false;
+        }
+    }
+    
+    function sendFileToUser() {
+        if (!adminSelectedFile || !currentOrderId) return;
+        
+        const order = orders.find(o => o.id === currentOrderId);
+        if (!order) return;
+        
+        const description = document.getElementById('fileDescription').value;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            order.status = 'confirmed';
+            order.fileSent = true;
+            order.fileDescription = description;
+            localStorage.setItem('saika_orders', JSON.stringify(orders));
+            
+            tg.sendData(JSON.stringify({
+                action: 'send_file',
+                order: order,
+                file: e.target.result,
+                fileName: adminSelectedFile.name,
+                description: description
+            }));
+            
+            showToast('✅ Файл отправлен!', `Покупатель @${order.username} получил файл`, 'success');
+            closeSendFileModal();
             renderOrders();
-        }
-        
-        function closeSendFileModal() {
-            document.getElementById('sendFileModal').style.display = 'none';
-            adminSelectedFile = null;
-            document.getElementById('sendFileBtn').disabled = true;
-            document.getElementById('adminFileInput').value = '';
-        }
-        
-        function handleAdminFileSelect(input) {
-            if (input.files && input.files[0]) {
-                adminSelectedFile = input.files[0];
-                document.getElementById('sendFileBtn').disabled = false;
-            }
-        }
-        
-        function sendFileToUser() {
-            if (!adminSelectedFile || !currentOrderId) return;
-            
-            const order = orders.find(o => o.id === currentOrderId);
-            if (!order) return;
-            
-            const description = document.getElementById('fileDescription').value;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                order.status = 'confirmed';
-                order.fileSent = true;
-                order.fileDescription = description;
-                localStorage.setItem('saika_orders', JSON.stringify(orders));
-                
-                tg.sendData(JSON.stringify({
-                    action: 'send_file',
-                    order: order,
-                    file: e.target.result,
-                    fileName: adminSelectedFile.name,
-                    description: description
-                }));
-                
-                tg.showPopup({title: '✅ Файл отправлен!', message: '', buttons: [{type: 'ok'}]});
-                closeSendFileModal();
-                renderOrders();
-            };
-            reader.readAsDataURL(adminSelectedFile);
-        }
-        
-        init();
-        tg.MainButton.hide();
-    </script>
+        };
+        reader.readAsDataURL(adminSelectedFile);
+    }
+    
+    init();
+    tg.MainButton.hide();
+</script>
 </body>
 </html>
