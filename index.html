@@ -74,6 +74,42 @@
         .order-product { font-weight: 700; margin-bottom: 6px; font-size: 16px; }
         .order-price { color: var(--success); font-weight: 700; margin-bottom: 8px; }
 
+        .order-screenshot { 
+            margin: 12px 0; 
+            max-height: 200px;
+            overflow: hidden;
+            border-radius: 16px;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid var(--border);
+        }
+        .order-screenshot img { 
+            width: 100%; 
+            height: auto;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 16px; 
+            transition: all 0.3s;
+        }
+        .order-screenshot.expanded {
+            max-height: none;
+        }
+        .order-screenshot.expanded img {
+            max-height: none;
+            object-fit: contain;
+        }
+        .screenshot-overlay {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            backdrop-filter: blur(5px);
+        }
+
         .user-order-card { background: var(--card); border-radius: 20px; padding: 18px; border: 1px solid var(--border); margin-bottom: 12px; }
         .user-order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .user-order-product { font-weight: 700; font-size: 16px; }
@@ -82,7 +118,7 @@
         
         .order-file-block { margin-top: 16px; padding: 16px; background: rgba(59,130,246,0.1); border-radius: 16px; border: 1px solid var(--primary); }
         .order-file-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; color: var(--primary); font-weight: 600; }
-        .file-download-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--primary); color: white; padding: 14px; border-radius: 14px; text-decoration: none; font-weight: 600; margin-top: 12px; transition: 0.2s; cursor: pointer; }
+        .file-download-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--primary); color: white; padding: 14px; border-radius: 14px; text-decoration: none; font-weight: 600; margin-top: 12px; transition: 0.2s; cursor: pointer; border: none; width: 100%; }
         .file-download-btn:active { transform: scale(0.97); }
         .file-preview { max-width: 100%; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border); max-height: 200px; object-fit: contain; }
 
@@ -130,6 +166,8 @@
 
         .admin-badge { background: var(--danger); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 8px; }
         .refresh-btn { background: var(--primary); color: white; padding: 8px 16px; border-radius: 12px; border: none; cursor: pointer; font-size: 13px; margin-left: 10px; }
+        
+        .file-link { color: var(--primary); word-break: break-all; text-decoration: underline; margin: 10px 0; }
     </style>
 </head>
 <body>
@@ -168,7 +206,7 @@
 <div id="myOrders" class="page">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
         <h3><i class="fas fa-history" style="color: var(--primary);"></i> История заказов</h3>
-        <button class="refresh-btn" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i> Обновить</button>
+        <button class="refresh-btn" onclick="syncWithBot()"><i class="fas fa-sync-alt"></i> Синхронизировать</button>
     </div>
     <div id="myOrdersList"></div>
 </div>
@@ -177,7 +215,7 @@
 <div id="orders" class="page">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
         <h3><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
-        <button class="refresh-btn" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i> Обновить</button>
+        <button class="refresh-btn" onclick="syncAdminOrders()"><i class="fas fa-sync-alt"></i> Обновить</button>
     </div>
     <div id="ordersList" class="orders-list"></div>
 </div>
@@ -243,8 +281,9 @@
     tg.ready();
     
     const MAIN_ADMIN = 1471307057;
-    const SECOND_ADMIN = 7066870264; // ЗАМЕНИ НА РЕАЛЬНЫЙ ID
+    const SECOND_ADMIN = 7066870264;
     const ADMIN_IDS = [MAIN_ADMIN, SECOND_ADMIN];
+    const BOT_USERNAME = 'vpnsaika_bot';
     
     let currentUser = tg.initDataUnsafe.user || {};
     let isAdmin = ADMIN_IDS.includes(currentUser.id);
@@ -255,7 +294,27 @@
     let adminSelectedFile = null;
     let currentOrderId = null;
     
-    let sentFiles = JSON.parse(localStorage.getItem('saika_sent_files') || '[]');
+    let orders = [];
+    let sentFiles = [];
+    
+    // АВТОВЫДАЧА ТОВАРОВ
+    const PRODUCT_FILES = {
+        "GTR VPN": [{url: "https://files.catbox.moe/cwy1n3.conf", name: "gtr_vpn.conf"}],
+        "VIP VPN": [{url: "https://files.catbox.moe/ab8a1r.conf", name: "vip_vpn.conf"}],
+        "ULTRA MAX VPN": [{url: "https://files.catbox.moe/rqbq5r.conf", name: "ultra_max.conf"}],
+        "STRONG VPN": [{url: "https://files.catbox.moe/e6a8yh.conf", name: "strong_vpn.conf"}],
+        "SAIKA S1 VPN": [{url: "https://files.catbox.moe/1coq6u.conf", name: "saika_s1.conf"}],
+        "DEAD ALL VPN": [{url: "https://files.catbox.moe/ohvc5d.conf", name: "dead_all.conf"}],
+        "TDM SKILL VPN": [{url: "https://files.catbox.moe/ohvc5d.conf", name: "tdm_skill.conf"}],
+        "FUCK VPN": [{url: "https://files.catbox.moe/3ghk4a.conf", name: "fuck_vpn.conf"}],
+        "UNLY VPN": [{url: "https://files.catbox.moe/5qcb3b.conf", name: "unly_vpn.conf"}],
+        "Магнит андроид": [{url: "https://files.catbox.moe/qahmjb.zip", name: "magnet_android.zip"}],
+        "Магнит ios": [{url: "https://files.catbox.moe/ql2d0s.mobileconfig", name: "dns_ios.mobileconfig"}],
+        "Пак unly": [{url: "https://files.catbox.moe/qahmjb.zip", name: "unly_pack.zip"}],
+        "DNS android": [{url: "https://files.catbox.moe/ql2d0s.mobileconfig", name: "dns_android.mobileconfig"}],
+        "DNS Ios": [{url: "https://files.catbox.moe/ql2d0s.mobileconfig", name: "dns_ios.mobileconfig"}],
+        "Пак сайки": [{url: "https://www.icloud.com/shortcuts/83963f23bcc94e7a85bbbe0c6a56e350", name: "saika_pack", isLink: true}]
+    };
     
     const products = {
         vpn: [
@@ -281,8 +340,6 @@
         ]
     };
     
-    let orders = JSON.parse(localStorage.getItem('saika_orders') || '[]');
-    
     function showToast(title, message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
@@ -294,32 +351,45 @@
         setTimeout(() => toast.remove(), 4000);
     }
     
-    function downloadFile(dataUrl, fileName) {
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast('📥 Скачивание', fileName, 'success');
+    function downloadFile(url, fileName) {
+        window.open(url, '_blank');
+        showToast('📥 Скачивание', fileName || 'файл', 'success');
     }
     
-    function refreshOrders() {
-        const stored = localStorage.getItem('saika_orders');
-        if (stored) orders = JSON.parse(stored);
+    function loadFromStorage() {
+        const storedOrders = localStorage.getItem('saika_orders');
+        if (storedOrders) orders = JSON.parse(storedOrders);
+        
+        const storedFiles = localStorage.getItem('saika_sent_files');
+        if (storedFiles) sentFiles = JSON.parse(storedFiles);
+    }
+    
+    function saveToStorage() {
+        localStorage.setItem('saika_orders', JSON.stringify(orders));
+        localStorage.setItem('saika_sent_files', JSON.stringify(sentFiles));
+    }
+    
+    function syncWithBot() {
+        loadFromStorage();
         renderMyOrders();
-        renderOrders();
         updateOrdersCount();
+        showToast('🔄 Синхронизация', 'Данные обновлены', 'info');
+    }
+    
+    function syncAdminOrders() {
+        loadFromStorage();
+        renderOrders();
         showToast('🔄 Обновлено', 'Данные синхронизированы', 'info');
     }
     
     function init() {
-        if (isAdmin) {
-            document.getElementById('ordersTab').style.display = 'block';
+        if (!currentUser.id) {
+            showToast('❌ Ошибка', 'Не удалось получить данные пользователя', 'error');
+            return;
         }
-        if (isMainAdmin) {
-            document.getElementById('filesTab').style.display = 'block';
-        }
+        
+        if (isAdmin) document.getElementById('ordersTab').style.display = 'block';
+        if (isMainAdmin) document.getElementById('filesTab').style.display = 'block';
         
         const avatar = document.getElementById('profilePhoto');
         if (currentUser.photo_url) {
@@ -335,12 +405,12 @@
         document.getElementById('profileName').innerHTML = displayName;
         document.getElementById('profileId').innerHTML = '<i class="fas fa-id-card"></i> ID: ' + currentUser.id;
         
+        loadFromStorage();
         updateOrdersCount();
         renderProducts();
         renderOrders();
         renderMyOrders();
         renderFiles();
-        checkUserNotifications();
     }
     
     function updateOrdersCount() {
@@ -397,40 +467,25 @@
                 <div class="user-order-date"><i class="far fa-calendar"></i> ${date}</div>
                 ${order.comment ? `<div class="order-comment"><i class="fas fa-comment"></i> ${order.comment}</div>` : ''}`;
             
-            if (order.status === 'confirmed' && order.fileData) {
-                const fileExt = order.fileName ? order.fileName.split('.').pop().toLowerCase() : '';
-                const isImage = ['jpg','jpeg','png','gif','webp'].includes(fileExt);
-                
-                html += `<div class="order-file-block">
-                    <div class="order-file-header"><i class="fas fa-check-circle" style="color:var(--success);"></i> Файл готов</div>`;
-                
-                if (isImage) {
-                    html += `<img src="${order.fileData}" class="file-preview" alt="Preview">`;
+            // АВТОВЫДАЧА
+            if (order.status === 'confirmed') {
+                const files = PRODUCT_FILES[order.product] || [];
+                if (files.length > 0) {
+                    html += `<div class="order-file-block">
+                        <div class="order-file-header"><i class="fas fa-check-circle" style="color:var(--success);"></i> Файлы готовы</div>`;
+                    
+                    files.forEach((file, i) => {
+                        if (file.isLink) {
+                            html += `<div class="file-link" onclick="window.open('${file.url}')">🔗 ${file.name}</div>`;
+                        } else {
+                            html += `<button class="file-download-btn" onclick="downloadFile('${file.url}', '${file.name}')">
+                                <i class="fas fa-download"></i> СКАЧАТЬ ${file.name}
+                            </button>`;
+                        }
+                    });
+                    
+                    html += `</div>`;
                 }
-                
-                html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                    <i class="fas fa-file"></i> <span>${order.fileName || 'file'}</span>
-                </div>`;
-                
-                if (order.fileDescription) {
-                    html += `<div class="order-comment"><i class="fas fa-align-left"></i> ${order.fileDescription}</div>`;
-                }
-                
-                html += `<button class="file-download-btn" onclick="downloadFile('${order.fileData}', '${order.fileName || 'file'}')">
-                    <i class="fas fa-download"></i> СКАЧАТЬ ФАЙЛ
-                </button>`;
-                
-                // Кнопка получить в боте
-                html += `<button class="btn btn-outline" style="margin-top:10px;" onclick="tg.openTelegramLink('https://t.me/vpnsaika_bot')">
-                    <i class="fab fa-telegram"></i> ПОЛУЧИТЬ В БОТЕ
-                </button></div>`;
-            } else if (order.status === 'confirmed' && !order.fileData) {
-                html += `<div class="order-file-block"><div class="order-file-header"><i class="fas fa-hourglass-half"></i> Файл загружается...</div><p style="color:var(--text-secondary);">Нажмите "Получить в боте" или обновите страницу</p>
-                <button class="btn btn-primary" style="margin-top:10px;" onclick="tg.openTelegramLink('https://t.me/vpnsaika_bot')">
-                    <i class="fab fa-telegram"></i> ПОЛУЧИТЬ В БОТЕ
-                </button></div>`;
-            } else if (order.status === 'declined') {
-                html += `<div class="order-file-block" style="background:rgba(239,68,68,0.1);border-color:var(--danger);"><div class="order-file-header" style="color:var(--danger);"><i class="fas fa-exclamation-circle"></i> Заказ отклонён</div><p style="color:var(--text-secondary);">Свяжитесь с @saikasupport</p></div>`;
             }
             
             html += `</div>`;
@@ -454,7 +509,12 @@
                 <div class="order-price"><i class="fas fa-ruble-sign"></i> ${order.price} ₽</div>
                 <div style="color:var(--text-secondary);font-size:12px;margin:5px 0;"><i class="fas fa-id-card"></i> ID: ${order.userId} | ${date}</div>
                 ${order.comment ? `<div class="order-comment"><i class="fas fa-comment"></i> ${order.comment}</div>` : ''}
-                ${order.screenshot ? `<div class="order-screenshot"><img src="${order.screenshot}" onclick="window.open('${order.screenshot}')"></div>` : ''}
+                ${order.screenshot ? `
+                    <div class="order-screenshot" onclick="this.classList.toggle('expanded')">
+                        <img src="${order.screenshot}" onclick="event.stopPropagation(); window.open('${order.screenshot}')">
+                        <span class="screenshot-overlay"><i class="fas fa-search-plus"></i> Развернуть</span>
+                    </div>
+                ` : ''}
                 <div class="order-actions">
                     <button class="btn btn-success" onclick="confirmOrder('${order.id}')"><i class="fas fa-check"></i> Подтвердить</button>
                     <button class="btn btn-danger" onclick="declineOrder('${order.id}')"><i class="fas fa-times"></i> Отклонить</button>
@@ -466,67 +526,41 @@
     
     function renderFiles() {
         if (!isMainAdmin) return;
-        
         if (sentFiles.length === 0) {
             document.getElementById('filesList').innerHTML = `<div class="empty-state"><i class="fas fa-folder-open"></i><p>Нет отправленных файлов</p></div>`;
             return;
         }
-        
         let html = '';
         sentFiles.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(file => {
             const date = new Date(file.timestamp).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
             const sentBy = file.sentBy === MAIN_ADMIN ? 'Главный админ' : `Админ ${file.sentBy}`;
-            
             html += `<div class="file-card">
-                <div class="file-header">
-                    <span class="file-name"><i class="fas fa-file"></i> ${file.fileName}</span>
-                    <span style="color:var(--text-secondary);font-size:12px;">${date}</span>
-                </div>
+                <div class="file-header"><span class="file-name"><i class="fas fa-file"></i> ${file.fileName}</span><span>${date}</span></div>
                 <div class="file-meta">
                     <div><i class="fas fa-user"></i> Отправил: ${sentBy}</div>
-                    <div><i class="fas fa-user-plus"></i> Покупатель: @${file.buyerUsername} (ID: ${file.buyerId})</div>
+                    <div><i class="fas fa-user-plus"></i> Покупатель: @${file.buyerUsername}</div>
                     <div><i class="fas fa-box"></i> Товар: ${file.product}</div>
-                    <div><i class="fas fa-tag"></i> Сумма: ${file.price} ₽</div>
-                    ${file.description ? `<div><i class="fas fa-align-left"></i> ${file.description}</div>` : ''}
                 </div>
                 <div class="file-actions">
-                    <button class="btn btn-primary" onclick="downloadFile('${file.fileData}', '${file.fileName}')"><i class="fas fa-download"></i> Скачать</button>
+                    <button class="btn btn-primary" onclick="downloadFile('${file.fileData || file.fileUrl}', '${file.fileName}')"><i class="fas fa-download"></i> Скачать</button>
                 </div>
             </div>`;
         });
         document.getElementById('filesList').innerHTML = html;
     }
     
-    function checkUserNotifications() {
-        let userOrders = orders.filter(o => o.userId === currentUser.id);
-        userOrders.forEach(order => {
-            if (order.status === 'confirmed' && order.fileData && !order.userNotified) {
-                showToast('🎉 Заказ выполнен!', `${order.product} — файл доступен`, 'success');
-                order.userNotified = true;
-                localStorage.setItem('saika_orders', JSON.stringify(orders));
-            }
-            if (order.status === 'declined' && !order.userNotified) {
-                showToast('❌ Заказ отклонён', order.product, 'error');
-                order.userNotified = true;
-                localStorage.setItem('saika_orders', JSON.stringify(orders));
-            }
-        });
-    }
-    
     function switchTab(tab) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        
         const tabs = ['shop', 'profile', 'myOrders', 'orders', 'files'];
         const index = tabs.indexOf(tab);
         if (index >= 0) {
             document.querySelectorAll('.tab')[index].classList.add('active');
             document.getElementById(tab).classList.add('active');
         }
-        
         if (tab === 'profile') updateOrdersCount();
-        if (tab === 'myOrders') { refreshOrders(); checkUserNotifications(); }
-        if (tab === 'orders' && isAdmin) refreshOrders();
+        if (tab === 'myOrders') syncWithBot();
+        if (tab === 'orders' && isAdmin) syncAdminOrders();
         if (tab === 'files' && isMainAdmin) renderFiles();
     }
     
@@ -576,35 +610,49 @@
             const order = {
                 id: orderId, userId: currentUser.id, username: currentUser.username || currentUser.first_name,
                 product: currentProduct.name, price: currentProduct.price, comment: comment,
-                screenshot: e.target.result, status: 'pending', userNotified: false, timestamp: new Date().toISOString()
+                screenshot: e.target.result, status: 'pending', timestamp: new Date().toISOString()
             };
             orders.push(order);
-            localStorage.setItem('saika_orders', JSON.stringify(orders));
+            saveToStorage();
             tg.sendData(JSON.stringify({action: 'new_order', order: order}));
-            showToast('✅ Заказ отправлен!', 'Статус можно отслеживать во вкладке "Мои заказы"', 'success');
+            showToast('✅ Заказ отправлен!', 'Ожидайте проверки', 'success');
             closeUploadModal();
             updateOrdersCount();
         };
         if (selectedFile) reader.readAsDataURL(selectedFile);
+        else {
+            const orderId = Date.now() + '_' + currentUser.id;
+            const order = {
+                id: orderId, userId: currentUser.id, username: currentUser.username || currentUser.first_name,
+                product: currentProduct.name, price: currentProduct.price, comment: comment,
+                screenshot: null, status: 'pending', timestamp: new Date().toISOString()
+            };
+            orders.push(order);
+            saveToStorage();
+            tg.sendData(JSON.stringify({action: 'new_order', order: order}));
+            showToast('✅ Заказ отправлен!', 'Без скриншота', 'success');
+            closeUploadModal();
+            updateOrdersCount();
+        }
     }
     
     function confirmOrder(orderId) {
         const order = orders.find(o => o.id === orderId);
         if (!order) return;
-        currentOrderId = orderId;
-        document.getElementById('sendFileProduct').innerHTML = `<i class="fas fa-box"></i> ${order.product}`;
-        document.getElementById('sendFileUser').innerHTML = `<i class="fas fa-user"></i> @${order.username} (ID: ${order.userId})`;
-        document.getElementById('sendFileModal').style.display = 'block';
+        order.status = 'confirmed';
+        saveToStorage();
+        tg.sendData(JSON.stringify({action: 'confirm_order', order: order}));
+        showToast('✅ Подтверждено', 'Заказ выполнен', 'success');
+        renderOrders();
     }
     
     function declineOrder(orderId) {
         const order = orders.find(o => o.id === orderId);
         if (!order) return;
         order.status = 'declined';
-        order.userNotified = false;
-        localStorage.setItem('saika_orders', JSON.stringify(orders));
+        saveToStorage();
         tg.sendData(JSON.stringify({action: 'decline_order', order: order}));
-        showToast('❌ Заказ отклонён', `Заказ #${orderId}`, 'error');
+        showToast('❌ Отклонено', '', 'error');
         renderOrders();
     }
     
@@ -637,35 +685,23 @@
             order.status = 'confirmed';
             order.fileData = e.target.result;
             order.fileName = adminSelectedFile.name;
-            order.fileDescription = description;
-            order.userNotified = false;
-            localStorage.setItem('saika_orders', JSON.stringify(orders));
+            saveToStorage();
             
-            const fileRecord = {
+            sentFiles.push({
                 id: Date.now() + '_file',
                 orderId: order.id,
                 fileName: adminSelectedFile.name,
                 fileData: e.target.result,
-                description: description,
                 sentBy: currentUser.id,
                 buyerId: order.userId,
                 buyerUsername: order.username,
                 product: order.product,
-                price: order.price,
                 timestamp: new Date().toISOString()
-            };
-            sentFiles.push(fileRecord);
-            localStorage.setItem('saika_sent_files', JSON.stringify(sentFiles));
+            });
+            saveToStorage();
             
-            tg.sendData(JSON.stringify({
-                action: 'send_file',
-                order: order,
-                file: e.target.result,
-                fileName: adminSelectedFile.name,
-                description: description
-            }));
-            
-            showToast('✅ Файл отправлен!', `Покупатель @${order.username} получит уведомление`, 'success');
+            tg.sendData(JSON.stringify({action: 'send_file', order: order, file: e.target.result, fileName: adminSelectedFile.name}));
+            showToast('✅ Отправлено!', '', 'success');
             closeSendFileModal();
             renderOrders();
             if (isMainAdmin) renderFiles();
