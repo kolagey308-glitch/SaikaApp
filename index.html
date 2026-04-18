@@ -26,8 +26,7 @@
         .logo { 
             width: 80px; height: 80px; 
             background-image: url('https://files.catbox.moe/h05hbj.jpg');
-            background-size: cover;
-            background-position: center;
+            background-size: cover; background-position: center;
             border-radius: 22px; margin: 0 auto 16px; 
             box-shadow: 0 10px 30px rgba(59,130,246,0.3);
             border: 2px solid var(--primary);
@@ -130,6 +129,7 @@
         .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
 
         .admin-badge { background: var(--danger); color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 8px; }
+        .refresh-btn { background: var(--primary); color: white; padding: 8px 16px; border-radius: 12px; border: none; cursor: pointer; font-size: 13px; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -166,13 +166,19 @@
 
 <!-- MY ORDERS -->
 <div id="myOrders" class="page">
-    <h3 style="margin-bottom: 20px;"><i class="fas fa-history" style="color: var(--primary);"></i> История заказов</h3>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h3><i class="fas fa-history" style="color: var(--primary);"></i> История заказов</h3>
+        <button class="refresh-btn" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i> Обновить</button>
+    </div>
     <div id="myOrdersList"></div>
 </div>
 
 <!-- ORDERS (ADMIN) -->
 <div id="orders" class="page">
-    <h3 style="margin-bottom: 20px;"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+        <h3><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
+        <button class="refresh-btn" onclick="refreshOrders()"><i class="fas fa-sync-alt"></i> Обновить</button>
+    </div>
     <div id="ordersList" class="orders-list"></div>
 </div>
 
@@ -249,7 +255,6 @@
     let adminSelectedFile = null;
     let currentOrderId = null;
     
-    // Отдельное хранилище для файлов (главный админ)
     let sentFiles = JSON.parse(localStorage.getItem('saika_sent_files') || '[]');
     
     const products = {
@@ -289,7 +294,6 @@
         setTimeout(() => toast.remove(), 4000);
     }
     
-       // Функция для реального скачивания файла
     function downloadFile(dataUrl, fileName) {
         const link = document.createElement('a');
         link.href = dataUrl;
@@ -298,6 +302,15 @@
         link.click();
         document.body.removeChild(link);
         showToast('📥 Скачивание', fileName, 'success');
+    }
+    
+    function refreshOrders() {
+        const stored = localStorage.getItem('saika_orders');
+        if (stored) orders = JSON.parse(stored);
+        renderMyOrders();
+        renderOrders();
+        updateOrdersCount();
+        showToast('🔄 Обновлено', 'Данные синхронизированы', 'info');
     }
     
     function init() {
@@ -405,9 +418,17 @@
                 
                 html += `<button class="file-download-btn" onclick="downloadFile('${order.fileData}', '${order.fileName || 'file'}')">
                     <i class="fas fa-download"></i> СКАЧАТЬ ФАЙЛ
+                </button>`;
+                
+                // Кнопка получить в боте
+                html += `<button class="btn btn-outline" style="margin-top:10px;" onclick="tg.openTelegramLink('https://t.me/vpnsaika_bot')">
+                    <i class="fab fa-telegram"></i> ПОЛУЧИТЬ В БОТЕ
                 </button></div>`;
             } else if (order.status === 'confirmed' && !order.fileData) {
-                html += `<div class="order-file-block"><div class="order-file-header"><i class="fas fa-hourglass-half"></i> Файл загружается...</div><p style="color:var(--text-secondary);">Администратор скоро добавит файл</p></div>`;
+                html += `<div class="order-file-block"><div class="order-file-header"><i class="fas fa-hourglass-half"></i> Файл загружается...</div><p style="color:var(--text-secondary);">Нажмите "Получить в боте" или обновите страницу</p>
+                <button class="btn btn-primary" style="margin-top:10px;" onclick="tg.openTelegramLink('https://t.me/vpnsaika_bot')">
+                    <i class="fab fa-telegram"></i> ПОЛУЧИТЬ В БОТЕ
+                </button></div>`;
             } else if (order.status === 'declined') {
                 html += `<div class="order-file-block" style="background:rgba(239,68,68,0.1);border-color:var(--danger);"><div class="order-file-header" style="color:var(--danger);"><i class="fas fa-exclamation-circle"></i> Заказ отклонён</div><p style="color:var(--text-secondary);">Свяжитесь с @saikasupport</p></div>`;
             }
@@ -479,8 +500,8 @@
     function checkUserNotifications() {
         let userOrders = orders.filter(o => o.userId === currentUser.id);
         userOrders.forEach(order => {
-            if (order.status === 'confirmed' && !order.userNotified) {
-                showToast('🎉 Заказ выполнен!', `${order.product} — файл доступен во вкладке "Мои заказы"`, 'success');
+            if (order.status === 'confirmed' && order.fileData && !order.userNotified) {
+                showToast('🎉 Заказ выполнен!', `${order.product} — файл доступен`, 'success');
                 order.userNotified = true;
                 localStorage.setItem('saika_orders', JSON.stringify(orders));
             }
@@ -504,8 +525,8 @@
         }
         
         if (tab === 'profile') updateOrdersCount();
-        if (tab === 'myOrders') renderMyOrders();
-        if (tab === 'orders' && isAdmin) renderOrders();
+        if (tab === 'myOrders') { refreshOrders(); checkUserNotifications(); }
+        if (tab === 'orders' && isAdmin) refreshOrders();
         if (tab === 'files' && isMainAdmin) renderFiles();
     }
     
@@ -620,7 +641,6 @@
             order.userNotified = false;
             localStorage.setItem('saika_orders', JSON.stringify(orders));
             
-            // Сохраняем в историю файлов для главного админа
             const fileRecord = {
                 id: Date.now() + '_file',
                 orderId: order.id,
@@ -657,4 +677,4 @@
     tg.MainButton.hide();
 </script>
 </body>
-</html> 
+</html>
