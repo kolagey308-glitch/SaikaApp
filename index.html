@@ -588,6 +588,17 @@
             margin-top: 18px;
         }
 
+        .download-btn {
+            background: var(--primary);
+            color: white;
+            padding: 14px;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
         /* Таблица долей */
         .shares-card {
             background: var(--bg-glass);
@@ -612,10 +623,6 @@
             justify-content: space-between;
             padding: 12px 0;
             border-bottom: 1px solid var(--border);
-        }
-
-        .shares-row:last-child {
-            border-bottom: none;
         }
 
         .shares-label {
@@ -666,6 +673,16 @@
             padding: 60px 20px;
             color: var(--text-secondary);
         }
+
+        .upload-area {
+            background: rgba(59,130,246,0.05);
+            border: 2px dashed var(--primary);
+            border-radius: 24px;
+            padding: 50px 20px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -713,17 +730,17 @@
 </div>
 
 <div id="adminPage" class="page">
-    <h3 style="margin-bottom: 20px;"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
+        <h3 style="margin-bottom: 20px;"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
     
     <!-- Таблица долей -->
     <div class="shares-card" id="sharesCard">
         <div class="shares-title"><i class="fas fa-chart-pie"></i> Доли от подтверждённых заказов</div>
         <div class="shares-row">
-            <span class="shares-label"><i class="fas fa-user"></i> @saikamng (30%)</span>
+            <span class="shares-label"><i class="fas fa-user"></i> @saikamng (70%)</span>
             <span class="shares-value" id="saikamngShare">0 ₽</span>
         </div>
         <div class="shares-row">
-            <span class="shares-label"><i class="fas fa-user"></i> @ewgeshha (70%)</span>
+            <span class="shares-label"><i class="fas fa-user"></i> @ewgeshha (30%)</span>
             <span class="shares-value" id="ewgeshhaShare">0 ₽</span>
         </div>
         <div class="shares-row total-row">
@@ -788,10 +805,7 @@
         <div class="payment-title"><i class="fas fa-cloud-upload-alt"></i> Загрузить чек</div>
         <h3 id="uploadProductName" style="text-align: center; margin-bottom: 20px;"></h3>
         
-        <div class="upload-area" onclick="document.getElementById('fileInput').click()" style="
-            background: rgba(59,130,246,0.05); border: 2px dashed var(--primary);
-            border-radius: 24px; padding: 50px 20px; text-align: center; margin: 20px 0; cursor: pointer;
-        ">
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
             <i class="fas fa-cloud-upload-alt" style="font-size: 52px; color: var(--primary); margin-bottom: 16px;"></i>
             <p style="font-weight: 600;">Нажмите чтобы выбрать скриншот</p>
         </div>
@@ -835,7 +849,28 @@
     let currentProduct = null;
     let selectedPayment = null;
     let selectedFile = null;
+    
+    // ЗАГРУЖАЕМ ЗАКАЗЫ ИЗ LOCALSTORAGE
     let orders = JSON.parse(localStorage.getItem('saika_orders') || '[]');
+    
+    // Файлы для скачивания
+    const PRODUCT_FILES = {
+        "GTR VPN": {url: "https://files.catbox.moe/cwy1n3.conf", name: "GTR_VPN.conf"},
+        "VIP VPN": {url: "https://files.catbox.moe/ab8a1r.conf", name: "VIP_VPN.conf"},
+        "ULTRA MAX VPN": {url: "https://files.catbox.moe/rqbq5r.conf", name: "ULTRA_MAX.conf"},
+        "STRONG VPN": {url: "https://files.catbox.moe/e6a8yh.conf", name: "STRONG_VPN.conf"},
+        "SAIKA S1 VPN": {url: "https://files.catbox.moe/1coq6u.conf", name: "SAIKA_S1.conf"},
+        "DEAD ALL VPN": {url: "https://files.catbox.moe/ohvc5d.conf", name: "DEAD_ALL.conf"},
+        "TDM SKILL VPN": {url: "https://files.catbox.moe/ohvc5d.conf", name: "TDM_SKILL.conf"},
+        "FUCK VPN": {url: "https://files.catbox.moe/3ghk4a.conf", name: "FUCK_VPN.conf"},
+        "UNLY VPN": {url: "https://files.catbox.moe/5qcb3b.conf", name: "UNLY_VPN.conf"},
+        "Магнит андроид": {url: "https://files.catbox.moe/qahmjb.zip", name: "Magnet_Android.zip"},
+        "Магнит ios": {url: "https://files.catbox.moe/ql2d0s.mobileconfig", name: "DNS_iOS.mobileconfig"},
+        "Пак unly": {url: "https://files.catbox.moe/qahmjb.zip", name: "Unly_Pack.zip"},
+        "DNS android": {url: "https://files.catbox.moe/ql2d0s.mobileconfig", name: "DNS_Android.mobileconfig"},
+        "DNS Ios": {url: "https://files.catbox.moe/ql2d0s.mobileconfig", name: "DNS_iOS.mobileconfig"},
+        "Пак сайки": {url: "https://www.icloud.com/shortcuts/83963f23bcc94e7a85bbbe0c6a56e350", name: "Saika_Pack", isLink: true}
+    };
     
     const products = {
         vpn: [
@@ -863,6 +898,10 @@
     
     setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 1500);
     
+    function saveOrders() {
+        localStorage.setItem('saika_orders', JSON.stringify(orders));
+    }
+    
     function showToast(title, message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
@@ -875,12 +914,17 @@
     function updateShares() {
         const confirmedOrders = orders.filter(o => o.status === 'confirmed');
         const total = confirmedOrders.reduce((sum, o) => sum + o.price, 0);
-        const saikamngShare = Math.round(total * 0.3);
-        const ewgeshhaShare = Math.round(total * 0.7);
+        const saikamngShare = Math.round(total * 0.7);  // 70% партнёру
+        const ewgeshhaShare = Math.round(total * 0.3);  // 30% тебе
         
         document.getElementById('saikamngShare').innerText = saikamngShare + ' ₽';
         document.getElementById('ewgeshhaShare').innerText = ewgeshhaShare + ' ₽';
         document.getElementById('totalConfirmed').innerText = total + ' ₽';
+    }
+    
+    function downloadFile(url, fileName) {
+        window.open(url, '_blank');
+        showToast('📥 Скачивание', fileName, 'success');
     }
     
     function init() {
@@ -931,9 +975,22 @@
             let statusIcon = '⏳', statusText = 'Ожидает', statusClass = 'pending';
             if (order.status === 'confirmed') { statusIcon = '✅'; statusText = 'Выполнен'; statusClass = 'confirmed'; }
             else if (order.status === 'declined') { statusIcon = '❌'; statusText = 'Отклонён'; statusClass = 'declined'; }
-            html += `<div class="order-card"><div class="order-header"><span><i class="fas fa-box"></i> ${order.product}</span>
+            
+            html += `<div class="order-card">
+                <div class="order-header"><span><i class="fas fa-box"></i> ${order.product}</span>
                 <span class="order-status ${statusClass}">${statusIcon} ${statusText}</span></div>
-                <div class="order-price">${order.price} ₽</div><div style="color: var(--text-secondary);">${date}</div></div>`;
+                <div class="order-price">${order.price} ₽</div>
+                <div style="color: var(--text-secondary);">${date}</div>`;
+            
+            // Кнопка скачивания для подтверждённых заказов
+            if (order.status === 'confirmed' && PRODUCT_FILES[order.product]) {
+                const file = PRODUCT_FILES[order.product];
+                html += `<div class="download-btn" onclick="downloadFile('${file.url}', '${file.name}')">
+                    <i class="fas fa-download"></i> СКАЧАТЬ ${file.name}
+                </div>`;
+            }
+            
+            html += `</div>`;
         });
         document.getElementById('myOrdersList').innerHTML = html;
     }
@@ -947,11 +1004,19 @@
         }
         let html = '';
         pendingOrders.forEach(order => {
-            html += `<div class="order-card"><div class="order-header"><span><i class="fas fa-user"></i> @${order.username} (${order.userId})</span>
-                <span class="order-status pending">Ожидает</span></div><div class="order-product">${order.product}</div>
-                <div class="order-price">${order.price} ₽</div>${order.screenshot ? `<div class="order-screenshot"><img src="${order.screenshot}"></div>` : ''}
-                <div class="order-actions"><button class="btn btn-success" onclick="confirmOrder('${order.id}')">✅ Подтвердить</button>
-                <button class="btn btn-danger" onclick="declineOrder('${order.id}')">❌ Отклонить</button></div></div>`;
+            const date = new Date(order.timestamp).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+            html += `<div class="order-card">
+                <div class="order-header"><span><i class="fas fa-user"></i> @${order.username} (${order.userId})</span>
+                <span class="order-status pending">Ожидает</span></div>
+                <div class="order-product">${order.product}</div>
+                <div class="order-price">${order.price} ₽</div>
+                <div style="color: var(--text-secondary);">${date}</div>
+                ${order.screenshot ? `<div class="order-screenshot"><img src="${order.screenshot}"></div>` : ''}
+                <div class="order-actions">
+                    <button class="btn btn-success" onclick="confirmOrder('${order.id}')">✅ Подтвердить</button>
+                    <button class="btn btn-danger" onclick="declineOrder('${order.id}')">❌ Отклонить</button>
+                </div>
+            </div>`;
         });
         document.getElementById('adminOrdersList').innerHTML = html;
     }
@@ -960,11 +1025,22 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         
-        const pages = { shop: 0, orders: 1, profile: 2, admin: 3 };
-        if (page === 'shop') { document.getElementById('shopPage').classList.add('active'); document.querySelectorAll('.nav-item')[0].classList.add('active'); }
-        else if (page === 'orders') { document.getElementById('ordersPage').classList.add('active'); document.querySelectorAll('.nav-item')[1].classList.add('active'); renderMyOrders(); }
-        else if (page === 'profile') { document.getElementById('profilePage').classList.add('active'); document.querySelectorAll('.nav-item')[2].classList.add('active'); }
-        else if (page === 'admin' && isAdmin) { document.getElementById('adminPage').classList.add('active'); document.querySelectorAll('.nav-item')[3].classList.add('active'); renderAdminOrders(); updateShares(); }
+        if (page === 'shop') {
+            document.getElementById('shopPage').classList.add('active');
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+        } else if (page === 'orders') {
+            document.getElementById('ordersPage').classList.add('active');
+            document.querySelectorAll('.nav-item')[1].classList.add('active');
+            renderMyOrders();
+        } else if (page === 'profile') {
+            document.getElementById('profilePage').classList.add('active');
+            document.querySelectorAll('.nav-item')[2].classList.add('active');
+        } else if (page === 'admin' && isAdmin) {
+            document.getElementById('adminPage').classList.add('active');
+            document.querySelectorAll('.nav-item')[3].classList.add('active');
+            renderAdminOrders();
+            updateShares();
+        }
     }
     
     function openPaymentPage(name, price) {
@@ -980,6 +1056,7 @@
         document.getElementById('payButton').style.display = 'none';
         document.getElementById('bankDetails').style.display = 'none';
         selectedPayment = null;
+        document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
     }
     
     function selectPayment(method) {
@@ -988,7 +1065,6 @@
         document.getElementById('method' + method.charAt(0).toUpperCase() + method.slice(1)).classList.add('selected');
         
         const details = document.getElementById('bankDetails');
-        const price = currentProduct.price;
         
         if (method === 'rf') {
             details.innerHTML = `<div class="bank-details">
@@ -1005,42 +1081,53 @@
         } else if (method === 'crypto') {
             details.innerHTML = `<div class="bank-details" style="text-align: center; padding: 30px;">
                 <i class="fab fa-bitcoin" style="font-size: 48px; color: #f7931a; margin-bottom: 20px;"></i>
-                <p style="margin-bottom: 20px;">Создаётся счёт в CryptoBot...</p>
-                <button class="btn btn-primary" onclick="createCryptoInvoice()"><i class="fab fa-telegram"></i> ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT</button>
+                <p style="margin-bottom: 20px;">Оплата через CryptoBot</p>
+                <button class="btn btn-primary" onclick="openCryptoBot()"><i class="fab fa-telegram"></i> ОПЛАТИТЬ В CRYPTOBOT</button>
             </div>`;
         }
         
         details.style.display = 'block';
-        if (method !== 'crypto') {
-            document.getElementById('payButton').style.display = 'flex';
-        } else {
-            document.getElementById('payButton').style.display = 'none';
-        }
+        document.getElementById('payButton').style.display = method === 'crypto' ? 'none' : 'flex';
     }
     
-    function createCryptoInvoice() {
-        const priceUsdt = (currentProduct.price / 90).toFixed(2);
-        tg.openTelegramLink('https://t.me/CryptoBot?start=' + btoa(JSON.stringify({amount: priceUsdt, currency: 'USDT'})));
-        showToast('💎 CryptoBot', 'Оплатите счёт в боте и вернитесь', 'info');
+    function openCryptoBot() {
+        tg.openTelegramLink('https://t.me/CryptoBot');
+        showToast('💎 CryptoBot', 'Отправьте /start и создайте счёт', 'info');
     }
     
-    function copyText(text) { navigator.clipboard?.writeText(text); showToast('✅ Скопировано', '', 'success'); }
+    function copyText(text) { 
+        navigator.clipboard?.writeText(text); 
+        showToast('✅ Скопировано', '', 'success'); 
+    }
     
     function proceedToUpload() {
-        if (!selectedPayment) { showToast('⚠️ Выберите способ', '', 'error'); return; }
+        if (!selectedPayment) { 
+            showToast('⚠️ Выберите способ', '', 'error'); 
+            return; 
+        }
         document.getElementById('uploadProductName').innerText = `${currentProduct.name} - ${currentProduct.price} ₽`;
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('uploadPage').classList.add('active');
     }
     
-    function goBack() { switchPage('shop'); }
-    function goBackToPayment() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('paymentPage').classList.add('active'); }
+    function goBack() { 
+        switchPage('shop'); 
+    }
+    
+    function goBackToPayment() { 
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('paymentPage').classList.add('active'); 
+    }
     
     function handleFileSelect(input) {
         if (input.files && input.files[0]) {
             selectedFile = input.files[0];
             const reader = new FileReader();
-            reader.onload = (e) => { document.getElementById('previewImage').src = e.target.result; document.getElementById('previewImage').style.display = 'block'; document.getElementById('sendOrderBtn').disabled = false; };
+            reader.onload = (e) => { 
+                document.getElementById('previewImage').src = e.target.result; 
+                document.getElementById('previewImage').style.display = 'block'; 
+                document.getElementById('sendOrderBtn').disabled = false; 
+            };
             reader.readAsDataURL(selectedFile);
         }
     }
@@ -1050,25 +1137,39 @@
         const reader = new FileReader();
         reader.onload = (e) => {
             const order = {
-                id: Date.now() + '_' + currentUser.id, userId: currentUser.id, username: currentUser.username || currentUser.first_name,
-                product: currentProduct.name, price: currentProduct.price, paymentMethod: selectedPayment, comment,
-                screenshot: e.target.result, status: 'pending', timestamp: new Date().toISOString()
+                id: Date.now() + '_' + currentUser.id, 
+                userId: currentUser.id, 
+                username: currentUser.username || currentUser.first_name,
+                product: currentProduct.name, 
+                price: currentProduct.price, 
+                paymentMethod: selectedPayment, 
+                comment,
+                screenshot: e.target.result, 
+                status: 'pending', 
+                timestamp: new Date().toISOString()
             };
             orders.push(order);
-            localStorage.setItem('saika_orders', JSON.stringify(orders));
+            saveOrders();
             tg.sendData(JSON.stringify({ action: 'new_order', order }));
             showToast('✅ Заказ отправлен!', '', 'success');
-            selectedFile = null; document.getElementById('fileInput').value = ''; document.getElementById('orderComment').value = '';
+            
+            selectedFile = null; 
+            document.getElementById('fileInput').value = ''; 
+            document.getElementById('orderComment').value = '';
+            document.getElementById('previewImage').style.display = 'none';
+            
             switchPage('orders');
         };
-        if (selectedFile) reader.readAsDataURL(selectedFile);
+        if (selectedFile) {
+            reader.readAsDataURL(selectedFile);
+        }
     }
     
     function confirmOrder(orderId) {
         const order = orders.find(o => o.id === orderId);
         if (!order) return;
         order.status = 'confirmed';
-        localStorage.setItem('saika_orders', JSON.stringify(orders));
+        saveOrders();
         tg.sendData(JSON.stringify({ action: 'confirm_order', order }));
         showToast('✅ Подтверждено', '', 'success');
         renderAdminOrders();
@@ -1079,7 +1180,7 @@
         const order = orders.find(o => o.id === orderId);
         if (!order) return;
         order.status = 'declined';
-        localStorage.setItem('saika_orders', JSON.stringify(orders));
+        saveOrders();
         tg.sendData(JSON.stringify({ action: 'decline_order', order }));
         showToast('❌ Отклонено', '', 'error');
         renderAdminOrders();
