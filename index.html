@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SAIKA PREMIUM</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,6 +20,7 @@
             --border: rgba(255, 255, 255, 0.06);
             --glow: 0 0 60px rgba(59, 130, 246, 0.4);
             --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --nav-height: 80px;
         }
 
         * {
@@ -36,9 +37,8 @@
                 radial-gradient(circle at 90% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
             color: var(--text);
             min-height: 100vh;
-            padding-bottom: 85px;
+            padding-bottom: calc(var(--nav-height) + 10px);
             animation: fadeIn 0.4s ease;
-            backdrop-filter: blur(20px);
         }
 
         @keyframes fadeIn {
@@ -64,11 +64,6 @@
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-            50% { box-shadow: 0 0 50px rgba(59, 130, 246, 0.6); }
         }
 
         /* Загрузочный экран */
@@ -98,7 +93,7 @@
             border-radius: 30px;
             margin-bottom: 30px;
             box-shadow: var(--glow);
-            animation: pulse 1.8s infinite, glowPulse 2s infinite;
+            animation: pulse 1.8s infinite;
             border: 2px solid var(--primary);
         }
 
@@ -189,7 +184,7 @@
             align-items: center;
             cursor: pointer;
             border: 1px solid var(--border);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s;
             box-shadow: var(--card-shadow);
             animation: slideUp 0.4s ease;
         }
@@ -303,13 +298,7 @@
             gap: 12px;
             border: none;
             cursor: pointer;
-            transition: all 0.3s;
             text-decoration: none;
-        }
-
-        .btn-telegram:active {
-            transform: scale(0.96);
-            background: #2563eb;
         }
 
         .btn-owner {
@@ -325,24 +314,20 @@
             gap: 12px;
             border: 1px solid var(--border);
             cursor: pointer;
-            transition: all 0.3s;
             text-decoration: none;
         }
 
-        .btn-owner:active {
-            background: rgba(255,255,255,0.1);
-        }
-
-        /* Меню снизу */
+        /* Меню снизу - ВСЕГДА ВИДНО */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
+            height: var(--nav-height);
             background: var(--bg-glass);
             backdrop-filter: blur(30px);
             display: flex;
-            padding: 10px 16px 25px;
+            padding: 8px 16px 20px;
             justify-content: space-around;
             border-top: 1px solid var(--border);
             z-index: 100;
@@ -464,10 +449,6 @@
             margin-bottom: 18px;
         }
 
-        .bank-row:last-child {
-            margin-bottom: 0;
-        }
-
         .bank-icon {
             width: 40px;
             height: 40px;
@@ -536,10 +517,6 @@
             background: transparent;
             border: 1px solid var(--border);
             color: var(--text);
-        }
-
-        .btn:active {
-            transform: scale(0.97);
         }
 
         /* Заказы */
@@ -611,15 +588,59 @@
             margin-top: 18px;
         }
 
-        .order-actions .btn {
-            padding: 12px;
-            font-size: 14px;
+        /* Таблица долей */
+        .shares-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .shares-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shares-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .shares-row:last-child {
+            border-bottom: none;
+        }
+
+        .shares-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .shares-value {
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .total-row {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--primary);
+            font-size: 18px;
+            font-weight: 800;
         }
 
         /* Toast */
         .toast {
             position: fixed;
-            bottom: 100px;
+            bottom: calc(var(--nav-height) + 20px);
             left: 20px;
             right: 20px;
             background: var(--bg-glass);
@@ -640,17 +661,10 @@
         .toast-title { font-weight: 700; margin-bottom: 4px; }
         .toast-message { font-size: 13px; color: var(--text-secondary); }
 
-        /* Пустое состояние */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: var(--text-secondary);
-        }
-
-        .empty-state i {
-            font-size: 56px;
-            margin-bottom: 20px;
-            opacity: 0.4;
         }
     </style>
 </head>
@@ -700,6 +714,24 @@
 
 <div id="adminPage" class="page">
     <h3 style="margin-bottom: 20px;"><i class="fas fa-clipboard-list" style="color: var(--primary);"></i> Заказы на проверку</h3>
+    
+    <!-- Таблица долей -->
+    <div class="shares-card" id="sharesCard">
+        <div class="shares-title"><i class="fas fa-chart-pie"></i> Доли от подтверждённых заказов</div>
+        <div class="shares-row">
+            <span class="shares-label"><i class="fas fa-user"></i> @saikamng (30%)</span>
+            <span class="shares-value" id="saikamngShare">0 ₽</span>
+        </div>
+        <div class="shares-row">
+            <span class="shares-label"><i class="fas fa-user"></i> @ewgeshha (70%)</span>
+            <span class="shares-value" id="ewgeshhaShare">0 ₽</span>
+        </div>
+        <div class="shares-row total-row">
+            <span class="shares-label"><i class="fas fa-coins"></i> Всего подтверждено</span>
+            <span class="shares-value" id="totalConfirmed">0 ₽</span>
+        </div>
+    </div>
+    
     <div id="adminOrdersList"></div>
 </div>
 
@@ -739,11 +771,9 @@
             </div>
         </div>
         
-        <div id="bankDetails" style="display: none;">
-            <!-- Динамически заполняется -->
-        </div>
+        <div id="bankDetails" style="display: none;"></div>
         
-        <button class="btn btn-success" id="payButton" onclick="proceedToUpload()">
+        <button class="btn btn-success" id="payButton" onclick="proceedToUpload()" style="display: none;">
             <i class="fas fa-check-circle"></i> Я ОПЛАТИЛ, ЗАГРУЗИТЬ ЧЕК
         </button>
         <button class="btn btn-outline" onclick="goBack()" style="margin-top: 12px;">
@@ -755,67 +785,38 @@
 <!-- Страница загрузки чека -->
 <div id="uploadPage" class="page">
     <div class="payment-page">
-        <div class="payment-title">
-            <i class="fas fa-cloud-upload-alt"></i> Загрузить чек
-        </div>
+        <div class="payment-title"><i class="fas fa-cloud-upload-alt"></i> Загрузить чек</div>
         <h3 id="uploadProductName" style="text-align: center; margin-bottom: 20px;"></h3>
         
         <div class="upload-area" onclick="document.getElementById('fileInput').click()" style="
-            background: rgba(59,130,246,0.05);
-            border: 2px dashed var(--primary);
-            border-radius: 24px;
-            padding: 50px 20px;
-            text-align: center;
-            margin: 20px 0;
-            cursor: pointer;
+            background: rgba(59,130,246,0.05); border: 2px dashed var(--primary);
+            border-radius: 24px; padding: 50px 20px; text-align: center; margin: 20px 0; cursor: pointer;
         ">
             <i class="fas fa-cloud-upload-alt" style="font-size: 52px; color: var(--primary); margin-bottom: 16px;"></i>
-            <p style="font-weight: 600; font-size: 16px;">Нажмите чтобы выбрать скриншот</p>
-            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">JPG, PNG до 10MB</p>
+            <p style="font-weight: 600;">Нажмите чтобы выбрать скриншот</p>
         </div>
         <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(this)">
         
         <img id="previewImage" style="width: 100%; border-radius: 20px; margin: 20px 0; display: none;">
         
         <textarea id="orderComment" placeholder="Комментарий к платежу..." style="
-            width: 100%;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 18px;
-            color: var(--text);
-            font-size: 15px;
-            margin: 16px 0;
-            resize: vertical;
+            width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+            border-radius: 18px; padding: 18px; color: var(--text); margin: 16px 0;
         "></textarea>
         
         <button class="btn btn-success" id="sendOrderBtn" onclick="sendOrder()" disabled>
             <i class="fas fa-paper-plane"></i> ОТПРАВИТЬ НА ПРОВЕРКУ
         </button>
-        <button class="btn btn-outline" onclick="goBackToPayment()" style="margin-top: 12px;">
-            <i class="fas fa-arrow-left"></i> НАЗАД
-        </button>
+        <button class="btn btn-outline" onclick="goBackToPayment()" style="margin-top: 12px;">НАЗАД</button>
     </div>
 </div>
 
 <!-- Меню снизу -->
 <div class="bottom-nav">
-    <div class="nav-item active" onclick="switchPage('shop')">
-        <i class="fas fa-store"></i>
-        <span>Магазин</span>
-    </div>
-    <div class="nav-item" onclick="switchPage('orders')">
-        <i class="fas fa-history"></i>
-        <span>Заказы</span>
-    </div>
-    <div class="nav-item" onclick="switchPage('profile')">
-        <i class="fas fa-user"></i>
-        <span>Профиль</span>
-    </div>
-    <div class="nav-item" id="adminNavItem" style="display: none;" onclick="switchPage('admin')">
-        <i class="fas fa-clipboard-list"></i>
-        <span>Проверка</span>
-    </div>
+    <div class="nav-item active" onclick="switchPage('shop')"><i class="fas fa-store"></i><span>Магазин</span></div>
+    <div class="nav-item" onclick="switchPage('orders')"><i class="fas fa-history"></i><span>Заказы</span></div>
+    <div class="nav-item" onclick="switchPage('profile')"><i class="fas fa-user"></i><span>Профиль</span></div>
+    <div class="nav-item" id="adminNavItem" style="display: none;" onclick="switchPage('admin')"><i class="fas fa-clipboard-list"></i><span>Проверка</span></div>
 </div>
 
 <script>
@@ -823,12 +824,13 @@
     tg.expand();
     tg.ready();
     
-    const MAIN_ADMIN = 1471307057;
+    const MAIN_ADMIN = 8491838482;
     const SECOND_ADMIN = 7066870264;
     const ADMIN_IDS = [MAIN_ADMIN, SECOND_ADMIN];
     
     let currentUser = tg.initDataUnsafe.user || { id: 0, first_name: 'Гость' };
     let isAdmin = ADMIN_IDS.includes(currentUser.id);
+    let isMainAdmin = currentUser.id === MAIN_ADMIN;
     
     let currentProduct = null;
     let selectedPayment = null;
@@ -859,36 +861,33 @@
         ]
     };
     
-    // Скрыть загрузочный экран
-    setTimeout(() => {
-        document.getElementById('loadingScreen').classList.add('hidden');
-    }, 1500);
+    setTimeout(() => document.getElementById('loadingScreen').classList.add('hidden'), 1500);
     
     function showToast(title, message, type = 'info') {
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-            <div class="toast-content">
-                <div class="toast-title">${title}</div>
-                <div class="toast-message">${message}</div>
-            </div>
-        `;
+        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div>`;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 4000);
     }
     
+    function updateShares() {
+        const confirmedOrders = orders.filter(o => o.status === 'confirmed');
+        const total = confirmedOrders.reduce((sum, o) => sum + o.price, 0);
+        const saikamngShare = Math.round(total * 0.3);
+        const ewgeshhaShare = Math.round(total * 0.7);
+        
+        document.getElementById('saikamngShare').innerText = saikamngShare + ' ₽';
+        document.getElementById('ewgeshhaShare').innerText = ewgeshhaShare + ' ₽';
+        document.getElementById('totalConfirmed').innerText = total + ' ₽';
+    }
+    
     function init() {
-        if (isAdmin) {
-            document.getElementById('adminNavItem').style.display = 'flex';
-        }
+        if (isAdmin) document.getElementById('adminNavItem').style.display = 'flex';
         
         const avatar = document.getElementById('profilePhoto');
-        if (currentUser.photo_url) {
-            avatar.src = currentUser.photo_url;
-        } else {
-            avatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.first_name || 'U') + '&background=3b82f6&color=fff&size=100';
-        }
+        avatar.src = currentUser.photo_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.first_name || 'U') + '&background=3b82f6&color=fff&size=100';
         
         document.getElementById('profileName').innerText = currentUser.first_name + (currentUser.last_name ? ' ' + currentUser.last_name : '');
         document.getElementById('profileId').innerHTML = '<i class="fas fa-id-card"></i> ID: ' + currentUser.id;
@@ -896,64 +895,45 @@
         renderProducts();
         renderMyOrders();
         renderAdminOrders();
+        updateShares();
     }
     
     function renderProducts() {
         let html = '';
-        
         html += `<div class="category-title"><i class="fas fa-shield-virus"></i> VPN ДЛЯ PUBG</div>`;
         products.vpn.forEach(p => html += renderProductCard(p));
-        
         html += `<div class="category-title"><i class="fas fa-cubes"></i> МАГНИТ & ПАКИ</div>`;
         products.extra.forEach(p => html += renderProductCard(p));
-        
         html += `<div class="category-title"><i class="fas fa-globe"></i> DNS СЕРВИСЫ</div>`;
         products.dns.forEach(p => html += renderProductCard(p));
-        
         document.getElementById('productsList').innerHTML = html;
     }
     
     function renderProductCard(p) {
-        return `
-            <div class="product-card" onclick="openPaymentPage('${p.name}', ${p.price})">
-                <div class="product-icon"><i class="fas ${p.icon}"></i></div>
-                <div class="product-info">
-                    <div class="product-name">${p.name}</div>
-                    <div class="price-box">
-                        <span class="price-new">${p.price} ₽</span>
-                    </div>
-                    <div class="stock"><i class="fas fa-box"></i> В наличии: ${p.stock} шт.</div>
-                </div>
-                <i class="fas fa-chevron-right" style="color: var(--text-secondary);"></i>
-            </div>
-        `;
+        return `<div class="product-card" onclick="openPaymentPage('${p.name}', ${p.price})">
+            <div class="product-icon"><i class="fas ${p.icon}"></i></div>
+            <div class="product-info"><div class="product-name">${p.name}</div>
+                <div class="price-box"><span class="price-new">${p.price} ₽</span></div>
+                <div class="stock"><i class="fas fa-box"></i> В наличии: ${p.stock} шт.</div>
+            </div><i class="fas fa-chevron-right" style="color: var(--text-secondary);"></i>
+        </div>`;
     }
     
     function renderMyOrders() {
         let userOrders = orders.filter(o => o.userId === currentUser.id);
-        if (userOrders.length === 0) {
+        if (!userOrders.length) {
             document.getElementById('myOrdersList').innerHTML = `<div class="empty-state"><i class="fas fa-shopping-bag"></i><p>У вас пока нет заказов</p></div>`;
             return;
         }
-        
         let html = '';
         userOrders.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(order => {
             const date = new Date(order.timestamp).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
             let statusIcon = '⏳', statusText = 'Ожидает', statusClass = 'pending';
             if (order.status === 'confirmed') { statusIcon = '✅'; statusText = 'Выполнен'; statusClass = 'confirmed'; }
             else if (order.status === 'declined') { statusIcon = '❌'; statusText = 'Отклонён'; statusClass = 'declined'; }
-            
-            html += `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span><i class="fas fa-user"></i> ${order.product}</span>
-                        <span class="order-status ${statusClass}">${statusIcon} ${statusText}</span>
-                    </div>
-                    <div class="order-price">${order.price} ₽</div>
-                    <div style="color: var(--text-secondary); font-size: 13px;"><i class="far fa-calendar"></i> ${date}</div>
-                    ${order.comment ? `<div style="margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 14px;"><i class="fas fa-comment"></i> ${order.comment}</div>` : ''}
-                </div>
-            `;
+            html += `<div class="order-card"><div class="order-header"><span><i class="fas fa-box"></i> ${order.product}</span>
+                <span class="order-status ${statusClass}">${statusIcon} ${statusText}</span></div>
+                <div class="order-price">${order.price} ₽</div><div style="color: var(--text-secondary);">${date}</div></div>`;
         });
         document.getElementById('myOrdersList').innerHTML = html;
     }
@@ -961,35 +941,17 @@
     function renderAdminOrders() {
         if (!isAdmin) return;
         let pendingOrders = orders.filter(o => o.status === 'pending');
-        if (pendingOrders.length === 0) {
-            document.getElementById('adminOrdersList').innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Нет заказов на проверку</p></div>`;
+        if (!pendingOrders.length) {
+            document.getElementById('adminOrdersList').innerHTML = `<div class="empty-state"><i class="fas fa-inbox"></i><p>Нет заказов</p></div>`;
             return;
         }
-        
         let html = '';
         pendingOrders.forEach(order => {
-            const date = new Date(order.timestamp).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-            html += `
-                <div class="order-card">
-                    <div class="order-header">
-                        <span><i class="fas fa-user"></i> @${order.username || 'User'} (ID: ${order.userId})</span>
-                        <span class="order-status pending"><i class="fas fa-clock"></i> Ожидает</span>
-                    </div>
-                    <div class="order-product">${order.product}</div>
-                    <div class="order-price">${order.price} ₽</div>
-                    <div style="color: var(--text-secondary); font-size: 13px; margin: 8px 0;"><i class="far fa-calendar"></i> ${date}</div>
-                    ${order.comment ? `<div style="margin: 12px 0; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 14px;"><i class="fas fa-comment"></i> ${order.comment}</div>` : ''}
-                    ${order.screenshot ? `
-                        <div class="order-screenshot" onclick="window.open('${order.screenshot}')">
-                            <img src="${order.screenshot}">
-                        </div>
-                    ` : ''}
-                    <div class="order-actions">
-                        <button class="btn btn-success" onclick="confirmOrder('${order.id}')"><i class="fas fa-check"></i> Подтвердить</button>
-                        <button class="btn btn-danger" onclick="declineOrder('${order.id}')"><i class="fas fa-times"></i> Отклонить</button>
-                    </div>
-                </div>
-            `;
+            html += `<div class="order-card"><div class="order-header"><span><i class="fas fa-user"></i> @${order.username} (${order.userId})</span>
+                <span class="order-status pending">Ожидает</span></div><div class="order-product">${order.product}</div>
+                <div class="order-price">${order.price} ₽</div>${order.screenshot ? `<div class="order-screenshot"><img src="${order.screenshot}"></div>` : ''}
+                <div class="order-actions"><button class="btn btn-success" onclick="confirmOrder('${order.id}')">✅ Подтвердить</button>
+                <button class="btn btn-danger" onclick="declineOrder('${order.id}')">❌ Отклонить</button></div></div>`;
         });
         document.getElementById('adminOrdersList').innerHTML = html;
     }
@@ -998,38 +960,26 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         
-        if (page === 'shop') {
-            document.getElementById('shopPage').classList.add('active');
-            document.querySelectorAll('.nav-item')[0].classList.add('active');
-        } else if (page === 'orders') {
-            document.getElementById('ordersPage').classList.add('active');
-            document.querySelectorAll('.nav-item')[1].classList.add('active');
-            renderMyOrders();
-        } else if (page === 'profile') {
-            document.getElementById('profilePage').classList.add('active');
-            document.querySelectorAll('.nav-item')[2].classList.add('active');
-        } else if (page === 'admin' && isAdmin) {
-            document.getElementById('adminPage').classList.add('active');
-            document.querySelectorAll('.nav-item')[3].classList.add('active');
-            renderAdminOrders();
-        }
+        const pages = { shop: 0, orders: 1, profile: 2, admin: 3 };
+        if (page === 'shop') { document.getElementById('shopPage').classList.add('active'); document.querySelectorAll('.nav-item')[0].classList.add('active'); }
+        else if (page === 'orders') { document.getElementById('ordersPage').classList.add('active'); document.querySelectorAll('.nav-item')[1].classList.add('active'); renderMyOrders(); }
+        else if (page === 'profile') { document.getElementById('profilePage').classList.add('active'); document.querySelectorAll('.nav-item')[2].classList.add('active'); }
+        else if (page === 'admin' && isAdmin) { document.getElementById('adminPage').classList.add('active'); document.querySelectorAll('.nav-item')[3].classList.add('active'); renderAdminOrders(); updateShares(); }
     }
     
     function openPaymentPage(name, price) {
         currentProduct = { name, price };
         document.getElementById('paymentProductName').innerText = name;
         document.getElementById('paymentPrice').innerText = price + ' ₽';
-        
-        const priceUah = Math.round(price / 2.5);
-        const priceUsdt = (price / 90).toFixed(2);
-        
         document.getElementById('priceRf').innerText = price + ' ₽';
-        document.getElementById('priceMono').innerText = priceUah + ' ₴';
-        document.getElementById('priceCrypto').innerText = priceUsdt + ' USDT';
+        document.getElementById('priceMono').innerText = Math.round(price / 2.5) + ' ₴';
+        document.getElementById('priceCrypto').innerText = (price / 90).toFixed(2) + ' USDT';
         
-        switchPage('payment');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('paymentPage').classList.add('active');
-        document.querySelectorAll('.page').forEach(p => { if (p.id !== 'paymentPage') p.classList.remove('active'); });
+        document.getElementById('payButton').style.display = 'none';
+        document.getElementById('bankDetails').style.display = 'none';
+        selectedPayment = null;
     }
     
     function selectPayment(method) {
@@ -1041,120 +991,56 @@
         const price = currentProduct.price;
         
         if (method === 'rf') {
-            details.innerHTML = `
-                <div class="bank-details">
-                    <div class="bank-row">
-                        <div class="bank-icon"><i class="fas fa-university"></i></div>
-                        <div class="bank-info">
-                            <div class="bank-label">Банк</div>
-                            <div class="bank-value">Т-Банк</div>
-                        </div>
-                    </div>
-                    <div class="bank-row">
-                        <div class="bank-icon"><i class="fas fa-credit-card"></i></div>
-                        <div class="bank-info">
-                            <div class="bank-label">Карта</div>
-                            <div class="bank-value">2200 7021 4895 7363</div>
-                        </div>
-                        <button class="copy-btn" onclick="copyText('2200702148957363')"><i class="fas fa-copy"></i></button>
-                    </div>
-                    <div class="bank-row">
-                        <div class="bank-icon"><i class="fas fa-user"></i></div>
-                        <div class="bank-info">
-                            <div class="bank-label">Получатель</div>
-                            <div class="bank-value">Саид К.</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            details.innerHTML = `<div class="bank-details">
+                <div class="bank-row"><div class="bank-icon"><i class="fas fa-university"></i></div><div class="bank-info"><div class="bank-label">Банк</div><div class="bank-value">Т-Банк</div></div></div>
+                <div class="bank-row"><div class="bank-icon"><i class="fas fa-credit-card"></i></div><div class="bank-info"><div class="bank-label">Карта</div><div class="bank-value">2200 7021 4895 7363</div></div><button class="copy-btn" onclick="copyText('2200702148957363')"><i class="fas fa-copy"></i></button></div>
+                <div class="bank-row"><div class="bank-icon"><i class="fas fa-user"></i></div><div class="bank-info"><div class="bank-label">Получатель</div><div class="bank-value">Саид К.</div></div></div>
+            </div>`;
         } else if (method === 'mono') {
-            details.innerHTML = `
-                <div class="bank-details">
-                    <div class="bank-row">
-                        <div class="bank-icon"><i class="fas fa-university"></i></div>
-                        <div class="bank-info">
-                            <div class="bank-label">Банк</div>
-                            <div class="bank-value">МоноБанк</div>
-                        </div>
-                    </div>
-                    <div class="bank-row">
-                        <div class="bank-icon"><i class="fas fa-credit-card"></i></div>
-                        <div class="bank-info">
-                            <div class="bank-label">Карта</div>
-                            <div class="bank-value">4441 1110 0801 1946</div>
-                        </div>
-                        <button class="copy-btn" onclick="copyText('4441111008011946')"><i class="fas fa-copy"></i></button>
-                    </div>
-                    <div class="bank-row">
-                        <div class="bank-icon"><i class="fas fa-user"></i></div>
-                        <div class="bank-info">
-                            <div class="bank-label">Получатель</div>
-                            <div class="bank-value">Ілля Х.</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            details.innerHTML = `<div class="bank-details">
+                <div class="bank-row"><div class="bank-icon"><i class="fas fa-university"></i></div><div class="bank-info"><div class="bank-label">Банк</div><div class="bank-value">МоноБанк</div></div></div>
+                <div class="bank-row"><div class="bank-icon"><i class="fas fa-credit-card"></i></div><div class="bank-info"><div class="bank-label">Карта</div><div class="bank-value">4441 1110 0801 1946</div></div><button class="copy-btn" onclick="copyText('4441111008011946')"><i class="fas fa-copy"></i></button></div>
+                <div class="bank-row"><div class="bank-icon"><i class="fas fa-user"></i></div><div class="bank-info"><div class="bank-label">Получатель</div><div class="bank-value">Ілля Х.</div></div></div>
+            </div>`;
         } else if (method === 'crypto') {
-            details.innerHTML = `
-                <div class="bank-details">
-                    <div class="bank-row">
-                        <div class="bank-icon"><i class="fab fa-bitcoin"></i></div>
-                        <div class="bank-info">
-                            <div class="bank-label">Сеть</div>
-                            <div class="bank-value">BEP20 (BSC)</div>
-                        </div>
-                    </div>
-                    <div class="bank-row">
-                        <div class="bank-icon"><i class="fas fa-wallet"></i></div>
-                        <div class="bank-info">
-                            <div class="bank-label">USDT Адрес</div>
-                            <div class="bank-value" style="font-size: 13px;">0xYOUR_USDT_ADDRESS</div>
-                        </div>
-                        <button class="copy-btn" onclick="copyText('0xYOUR_USDT_ADDRESS')"><i class="fas fa-copy"></i></button>
-                    </div>
-                </div>
-            `;
+            details.innerHTML = `<div class="bank-details" style="text-align: center; padding: 30px;">
+                <i class="fab fa-bitcoin" style="font-size: 48px; color: #f7931a; margin-bottom: 20px;"></i>
+                <p style="margin-bottom: 20px;">Создаётся счёт в CryptoBot...</p>
+                <button class="btn btn-primary" onclick="createCryptoInvoice()"><i class="fab fa-telegram"></i> ОПЛАТИТЬ ЧЕРЕЗ CRYPTOBOT</button>
+            </div>`;
         }
         
         details.style.display = 'block';
-        document.getElementById('payButton').style.display = 'flex';
+        if (method !== 'crypto') {
+            document.getElementById('payButton').style.display = 'flex';
+        } else {
+            document.getElementById('payButton').style.display = 'none';
+        }
     }
     
-    function copyText(text) {
-        navigator.clipboard?.writeText(text);
-        showToast('✅ Скопировано', 'Данные в буфере обмена', 'success');
+    function createCryptoInvoice() {
+        const priceUsdt = (currentProduct.price / 90).toFixed(2);
+        tg.openTelegramLink('https://t.me/CryptoBot?start=' + btoa(JSON.stringify({amount: priceUsdt, currency: 'USDT'})));
+        showToast('💎 CryptoBot', 'Оплатите счёт в боте и вернитесь', 'info');
     }
+    
+    function copyText(text) { navigator.clipboard?.writeText(text); showToast('✅ Скопировано', '', 'success'); }
     
     function proceedToUpload() {
-        if (!selectedPayment) {
-            showToast('⚠️ Выберите способ', 'Выберите способ оплаты', 'error');
-            return;
-        }
-        
-        document.getElementById('uploadProductName').innerText = `${currentProduct.name} - ${currentProduct.price} ₽ (${selectedPayment.toUpperCase()})`;
-        
+        if (!selectedPayment) { showToast('⚠️ Выберите способ', '', 'error'); return; }
+        document.getElementById('uploadProductName').innerText = `${currentProduct.name} - ${currentProduct.price} ₽`;
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('uploadPage').classList.add('active');
     }
     
-    function goBack() {
-        switchPage('shop');
-    }
-    
-    function goBackToPayment() {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('paymentPage').classList.add('active');
-    }
+    function goBack() { switchPage('shop'); }
+    function goBackToPayment() { document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); document.getElementById('paymentPage').classList.add('active'); }
     
     function handleFileSelect(input) {
         if (input.files && input.files[0]) {
             selectedFile = input.files[0];
             const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('previewImage').src = e.target.result;
-                document.getElementById('previewImage').style.display = 'block';
-                document.getElementById('sendOrderBtn').disabled = false;
-            };
+            reader.onload = (e) => { document.getElementById('previewImage').src = e.target.result; document.getElementById('previewImage').style.display = 'block'; document.getElementById('sendOrderBtn').disabled = false; };
             reader.readAsDataURL(selectedFile);
         }
     }
@@ -1163,39 +1049,19 @@
         const comment = document.getElementById('orderComment').value;
         const reader = new FileReader();
         reader.onload = (e) => {
-            const orderId = Date.now() + '_' + currentUser.id;
             const order = {
-                id: orderId,
-                userId: currentUser.id,
-                username: currentUser.username || currentUser.first_name,
-                product: currentProduct.name,
-                price: currentProduct.price,
-                paymentMethod: selectedPayment,
-                comment: comment,
-                screenshot: e.target.result,
-                status: 'pending',
-                timestamp: new Date().toISOString()
+                id: Date.now() + '_' + currentUser.id, userId: currentUser.id, username: currentUser.username || currentUser.first_name,
+                product: currentProduct.name, price: currentProduct.price, paymentMethod: selectedPayment, comment,
+                screenshot: e.target.result, status: 'pending', timestamp: new Date().toISOString()
             };
-            
             orders.push(order);
             localStorage.setItem('saika_orders', JSON.stringify(orders));
-            
-            tg.sendData(JSON.stringify({ action: 'new_order', order: order }));
-            
-            showToast('✅ Заказ отправлен!', 'Ожидайте проверки', 'success');
-            
-            selectedFile = null;
-            selectedPayment = null;
-            document.getElementById('fileInput').value = '';
-            document.getElementById('orderComment').value = '';
-            document.getElementById('previewImage').style.display = 'none';
-            
+            tg.sendData(JSON.stringify({ action: 'new_order', order }));
+            showToast('✅ Заказ отправлен!', '', 'success');
+            selectedFile = null; document.getElementById('fileInput').value = ''; document.getElementById('orderComment').value = '';
             switchPage('orders');
         };
-        
-        if (selectedFile) {
-            reader.readAsDataURL(selectedFile);
-        }
+        if (selectedFile) reader.readAsDataURL(selectedFile);
     }
     
     function confirmOrder(orderId) {
@@ -1203,9 +1069,10 @@
         if (!order) return;
         order.status = 'confirmed';
         localStorage.setItem('saika_orders', JSON.stringify(orders));
-        tg.sendData(JSON.stringify({ action: 'confirm_order', order: order }));
-        showToast('✅ Подтверждено', 'Заказ выполнен', 'success');
+        tg.sendData(JSON.stringify({ action: 'confirm_order', order }));
+        showToast('✅ Подтверждено', '', 'success');
         renderAdminOrders();
+        updateShares();
     }
     
     function declineOrder(orderId) {
@@ -1213,7 +1080,7 @@
         if (!order) return;
         order.status = 'declined';
         localStorage.setItem('saika_orders', JSON.stringify(orders));
-        tg.sendData(JSON.stringify({ action: 'decline_order', order: order }));
+        tg.sendData(JSON.stringify({ action: 'decline_order', order }));
         showToast('❌ Отклонено', '', 'error');
         renderAdminOrders();
     }
